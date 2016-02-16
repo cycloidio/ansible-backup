@@ -23,17 +23,9 @@
     - service: name=elasticsearch state=started
   roles:
     - role: ansible-backup
+      validate_task: true # Run the validator
       backup_type: elasticsearch
       backup_es_bucket_name: "{{ backup_es_bucket_name }}"
       backup_es_bucket_region: "{{ aws_default_region }}"
       tags:
         - ansible-backup
-
-# Launch tests tasks
-- hosts: all
-  roles:
-    - role: ansible-backup
-      validate_task: true # Run only the validator
-      backup_type: elasticsearch
-      backup_es_bucket_name: "{{ backup_es_bucket_name }}"
-      backup_es_bucket_region: "{{ aws_default_region }}"

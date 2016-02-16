@@ -1,6 +1,5 @@
 ---
 
-
 ### Required
 # Type of backup to setup.
 # Args : (elasticsearch|mongodb)
@@ -25,6 +24,7 @@ backup_es_retention:
   unit: days
   value: 30
 
+# Cron commands to backup and apply the policy retention
 backup_es_crons:
   - name: snapshot
     job: "/usr/bin/cronlock /usr/local/bin/curator snapshot --repository {{ backup_es_bucket_name }} indices --all-indices"

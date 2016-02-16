@@ -3,94 +3,104 @@ ansible-backup
 
 This role install and configure backups for several applications like elasticsearch and mongodb.
 
+No global requirements. It will depend of what type of backup you want. See specific Requirements section for each backup type.
 
-Dependances :
+The only things you need is to specify `backup_type` variable to define what kind of backup you want to setup.
 
-Credentials
-https://github.com/elastic/elasticsearch-cloud-aws#generic-configuration
+elasticsearch
+=============
 
-By default snapshot and retention command run with cronlock :
-For cycloid cronlock is provided by ansible-base
-If you don't want that, just override .......... commands
+For now on elasticsearch don't provide a "retention policy" feature for snapshots. So we are using the python module `elasticsearch-curator` to do the job (https://www.elastic.co/guide/en/elasticsearch/client/curator/index.html).
 
+Exemple with `aloysius.elasticsearch` ansible role :
 
-No actual retention policy https://github.com/elastic/elasticsearch/issues/3826
-Will install elasticsearch-curator
-
-Exemple :
+```
     - role: aloysius.elasticsearch
       es_etc:
-        cloud.aws.region: eu-west
+        cloud.aws.region: "..."
         cloud.aws.access_key: "..."
         cloud.aws.secret_key: "..."
-
-Need define :
-TODO GET defaults/main.yml content
-
-
-
-Generic role for software deployment
-
-TODO le verify doit s'assurer qu'on peux se connecter au bucket
-POST /_snapshot/my_backup/_verify
-
-
-Test part :
---------------
-$ export AWS_ACCESS_KEY_ID=...
-$ export AWS_SECRET_ACCESS_KEY=...
-$ export AWS_DEFAULT_REGION=...
-$ export S3_BUCKET_NAME=...
-
-Extra env var ANSIBLE_EXTRA_FLAGS
-
-Self tested role :
-  roles:
-    - role: ansible-backup
-      validate_task: true # Run only the validator                                                                                                                                                                                 
-
-
-
+```
 
 Requirements
 ------------
 
-Nginx and supervisord if you enabled their flags
+We are using `elasticsearch-cloud-aws` plugin to backup on s3 bucket. So ensure configured AWS credentials for this plugin (https://github.com/elastic/elasticsearch-cloud-aws#generic-configuration)
+
+The default cron commands for snapshot and retention are using `cronlock`. For Cycloid `cronlock` is provided by the `ansible-base` role. If you don't want `cronlock`, just override the `backup_es_crons` variable.
 
 Role Variables
 --------------
-When true, stop supervisord of deployment_app_name at the beginning and restarted it at the end
 
-    deployment_supervisord_enabled: false
+**Required**
 
-When true, restart nginx at the end
+Name and region of the bucket to use for backups on s3
 
-    deployment_nginx_enabled: false
+    backup_es_bucket_name: foo
+    backup_es_bucket_region: us-east-1
 
+**Optional**
 
-When true, stash sensu alert at the beginning end unstash them at the end 
+Configure the retention policy of your backups :
 
-    deployment_sensu_enabled: false
+    backup_es_retention:
+      unit: days
+      value: 30
 
-`deployment_sensu_stashes` sample:
-    - body:
-        path: "silence/CYCLOID-CI0-EU-WE1-PROD/nginx_proc_check"
-        content:
-          message: "deployment"
-          source: "ansible"
-        expire: 600
+Cron commands to backup and apply the policy retention
 
-When true, sens a mail to `deployment_deploy_to: []`
+    backup_es_crons:
+      - name: snapshot
+        ...
+        minute: "0"
+        hour: "3"
+      - name: retention command
+        ...
+        minute: "0"
+        hour: "6"
 
-    deployment_mail_enabled: false
+Enable the validate task callback to check if the role setup succeded
+
+    validate_task: true
+
+**Example :**
+
+```
+  roles:
+    - role: ansible-backup
+      backup_type: elasticsearch
+      backup_es_bucket_name: "{{ backup_es_bucket_name }}"
+      backup_es_bucket_region: "{{ aws_default_region }}"
+```
+
+Tests
+=====
+
+All backup types are self tested. After run the role, you can specify to automatically call the validate task callback with the `validate_task` variable.
+
+To simplify the task, we are using kitchen.ci to test our ansible roles. Our kitchen test configuration use environment variable to allow the CI to configure the ansible playbook.
+
+For the elasticsearch s3 backup, you have to provide all bucket informations to be able to test it :
+
+    export AWS_ACCESS_KEY_ID=...
+    export AWS_SECRET_ACCESS_KEY=...
+    export AWS_DEFAULT_REGION=...
+    export S3_BUCKET_NAME=...
+
+Note : You also can add extra ansible command  args with `ANSIBLE_EXTRA_FLAGS` environment variable.
+
 
 License
--------
+=======
 
 cycloid.io
 
 
-###############
+
+
+
+This WILL BE REMOVED SOON
+###########################
 
 
 curl -XPUT 'localhost:9200/customer?pretty'
@@ -163,3 +173,5 @@ export AWS_DEFAULT_REGION=eu-west-1
 s3cmd ls s3://gael-test/
 
 
+TODO le verify doit s'assurer qu'on peux se connecter au bucket
+POST /_snapshot/my_backup/_verify
