@@ -15,8 +15,8 @@ provisioner:
   ansible_extra_flags: <%= ENV['ANSIBLE_EXTRA_FLAGS'] %>
   extra_vars:
     aws_default_region: <%= ENV['AWS_DEFAULT_REGION'] %>
-    aws_access_key_id: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>
-    aws_secret_access_key: <%= ENV['AWS_ACCESS_KEY_ID'] %>
+    aws_access_key_id: <%= ENV['AWS_ACCESS_KEY_ID'] %>
+    aws_secret_access_key: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>
     backup_es_bucket_name: <%= ENV['S3_BUCKET_NAME'] %>
 
 #additional_copy_path
