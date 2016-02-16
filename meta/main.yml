@@ -1,0 +1,11 @@
+---
+galaxy_info:
+  author: julien@cycloid.io
+  description: 
+  company: cycloid.io
+  license: cycloid.io
+  min_ansible_version: 1.2
+
+dependencies: []
+
+allow_duplicates: yes

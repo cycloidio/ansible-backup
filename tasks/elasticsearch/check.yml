@@ -1,0 +1,14 @@
+---
+
+# Check args
+- name: "Check - backup_es_bucket_name and backup_es_bucket_region are provided"
+  fail: msg='backup_es_bucket_name and backup_es_bucket_region should be provided for es backup'
+  when: backup_es_bucket_name is not defined or backup_es_bucket_region is not defined
+
+- name: Ensure elasticsearch is listening
+  wait_for: port={{ backup_es_port }} host={{ backup_es_host }} timeout=15
+
+- name: "Check - es cluster is alive"
+  uri: >
+    url="http://{{ backup_es_host }}:{{ backup_es_port }}/_cluster/health"
+    method=GET

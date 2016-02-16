@@ -1,0 +1,5 @@
+---
+
+ - src: aloysius.elasticsearch
+ - src: ansiblebit.oracle-java
+

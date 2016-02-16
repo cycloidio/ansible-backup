@@ -1,0 +1,52 @@
+---
+
+
+### Required
+# Type of backup to setup.
+# Args : (elasticsearch|mongodb)
+# backup_type: 
+
+
+
+# === ES ===
+
+### Required
+# Name and region of the bucket to use for backups on s3
+# backup_es_bucket_name
+# backup_es_bucket_region
+
+### Optional
+backup_es_host: localhost
+backup_es_port: 9200
+
+# https://www.elastic.co/guide/en/elasticsearch/client/curator/current/snapshots-subcommand.html
+# [hours|days|weeks|months]
+backup_es_retention:
+  unit: days
+  value: 30
+
+backup_es_crons:
+  - name: snapshot
+    job: "/usr/bin/cronlock /usr/local/bin/curator snapshot --repository {{ backup_es_bucket_name }} indices --all-indices"
+    minute: "0"
+    hour: "3"
+    day: "*"
+    month: "*"
+    weekday: "*"
+  - name: retention command
+    job: "/usr/bin/cronlock /usr/local/bin/curator delete snapshots --repository {{ backup_es_bucket_name }} --time-unit {{ backup_es_retention.unit }} --older-than {{ backup_es_retention.value }} --timestring '%Y%m%d%H%M%S'"
+    minute: "0"
+    hour: "6"
+    day: "*"
+    month: "*"
+    weekday: "*"
+
+# Run only the validation task
+validate_task: false
+
+# Display list of snapshots for debug purpose
+# curator show snapshots --repository {{ backup_es_bucket_name }}  --time-unit hours --older-than 1 --timestring '%Y%m%d%H%M%S'
+# More informations at : https://www.elastic.co/guide/en/elasticsearch/client/curator/current/index.html
+
+### Extra
+backup_es_repository_name: s3_backup

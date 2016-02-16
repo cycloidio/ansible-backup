@@ -1,0 +1,39 @@
+- hosts: all
+  roles:
+    - role: ansiblebit.oracle-java
+      tags: java
+
+    - role: aloysius.elasticsearch
+      es_release: '1.7'
+      es_version: '1.7.1'
+      es_etc_cluster_name: kitchen
+      es_etc:
+        cloud.aws.region: "{{ aws_default_region }}"
+        cloud.aws.access_key: "{{ aws_access_key_id }}"
+        cloud.aws.secret_key: "{{ aws_secret_access_key }}"
+      
+      es_plugins:
+        - name: lmenezes/elasticsearch-kopf
+          plugin_file: kopf
+        - name: elasticsearch/elasticsearch-cloud-aws/2.7.1
+          plugin_file: cloud-aws
+
+- hosts: all
+  pre_tasks:
+    - service: name=elasticsearch state=started
+  roles:
+    - role: ansible-backup
+      backup_type: elasticsearch
+      backup_es_bucket_name: "{{ backup_es_bucket_name }}"
+      backup_es_bucket_region: "{{ aws_default_region }}"
+      tags:
+        - ansible-backup
+
+# Launch tests tasks
+- hosts: all
+  roles:
+    - role: ansible-backup
+      validate_task: true # Run only the validator
+      backup_type: elasticsearch
+      backup_es_bucket_name: "{{ backup_es_bucket_name }}"
+      backup_es_bucket_region: "{{ aws_default_region }}"

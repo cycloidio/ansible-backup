@@ -1,0 +1,19 @@
+---
+
+- name: Install required package for es backup | Ubuntu / Debian
+  apt:
+    name: '{{ item }}'
+    cache_valid_time: 3600
+    update_cache: yes 
+    state: latest
+  with_items:
+    - python-dev
+    - build-essential
+    - python-pip
+    - cron
+  when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
+
+- name: Install curator command
+  pip:
+    name: elasticsearch-curator
+    state: present

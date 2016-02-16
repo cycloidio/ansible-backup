@@ -1,0 +1,32 @@
+---
+# TODO: remove it in profit of s3-unarchive
+
+- name: Remove artifact if it exists locally.
+  file: path=/tmp/s3_unzip.zip state=absent
+
+- name: S3 | Get object from S3
+  s3: 
+    bucket={{ deployment_s3_bucket }} 
+    object={{ deployment_s3_object }}.zip
+    dest=/tmp/s3_unzip.zip
+    mode=get 
+    region={{ deployment_s3_region }}
+
+- name: Create unzip directory
+  register: mktemp
+  command: mktemp -d
+
+- name: Unzip archive
+  unarchive: 
+    src=/tmp/s3_unzip.zip
+    dest={{ mktemp.stdout }}
+    copy=no
+
+- name: Create release directory
+  file: name={{ deployment_release_path.stdout }} state=directory
+
+- name: Move unzip files
+  shell: "mv {{ mktemp.stdout }}/* {{ deployment_release_path.stdout }}"
+
+- name: Remove temporary unzip directory
+  file: name={{ mktemp.stdout }} state=absent

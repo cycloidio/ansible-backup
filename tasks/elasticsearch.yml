@@ -1,0 +1,10 @@
+---
+
+ - block:
+     - include: elasticsearch/check.yml
+     - include: elasticsearch/dependencies.yml
+     - include: elasticsearch/configure.yml
+   when: not validate_task 
+
+ - include: elasticsearch/validate.yml
+   when: validate_task

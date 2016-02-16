@@ -1,0 +1,8 @@
+---
+
+_es_create_repository_body:
+  type: s3
+  settings:
+    bucket: "{{ backup_es_bucket_name }}"
+    region: "{{ backup_es_bucket_region }}"
+

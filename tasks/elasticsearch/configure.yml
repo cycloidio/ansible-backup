@@ -1,0 +1,48 @@
+---
+
+# Check args
+- name: "Check - backup_es_bucket_name and backup_es_bucket_region are provided"
+  fail: msg='backup_es_bucket_name and backup_es_bucket_region should be provided for es backup'
+  when: backup_es_bucket_name is not defined or backup_es_bucket_region is not defined
+
+- name: "Check - es cluster is alive"
+  uri: >
+    url="http://{{ backup_es_host }}:{{ backup_es_port }}/_cluster/health"
+    method=GET
+
+
+# Configure backups
+- name: "ES repository {{ backup_es_repository_name }} exist ?"
+  uri: >
+    url="http://{{ backup_es_host }}:{{ backup_es_port }}/_snapshot/{{ backup_es_repository_name }}"
+    method=GET
+    status_code=200
+  ignore_errors: True
+  register: backup_es_repository_status
+
+#- name: Create ES repository {{ backup_es_repository_name }}
+#  uri: >
+#    url="http://{{ backup_es_host }}:{{ backup_es_port }}/_snapshot/{{ backup_es_repository_name }}"
+#    method=POST
+#    body_format=json
+#    body="{{ _es_create_repository_body | to_json }}"
+#    status_code=200
+#  when: backup_es_repository_status|failed
+
+
+# Add cron comands
+- name: "cron add snapshot and retention commands"
+  cron: >
+    name="{{item.name}}"
+    job="{{ item.job}}"
+    minute={{ item.minute|default('*') }}
+    hour={{ item.hour|default('*') }}
+    day={{ item.day|default('*') }}
+    month={{ item.month|default('*') }}
+    weekday={{ item.weekday|default('*') }}
+    cron_file={{ item.file|default("es_backup") }}
+    user={{ item.user|default('root') }}
+    state={{ item.state|default('present') }}
+  with_items: backup_es_crons
+  sudo: yes 
+
