@@ -26,19 +26,13 @@ backup_es_retention:
 # Cron commands to backup and apply the policy retention
 backup_es_crons:
   - name: snapshot
-    job: "/usr/bin/cronlock /usr/local/bin/curator snapshot --repository {{ backup_es_repository_name }} indices --all-indices"
+    job: "/usr/bin/cronlock /usr/local/bin/curator snapshot --repository {{ backup_es_repository_name }} indices --all-indices 2>&1 >> /var/log/backup-elasticsearch.log"
     minute: "0"
     hour: "3"
-    day: "*"
-    month: "*"
-    weekday: "*"
   - name: retention command
-    job: "/usr/bin/cronlock /usr/local/bin/curator delete snapshots --repository {{ backup_es_repository_name }} --time-unit {{ backup_es_retention.unit }} --older-than {{ backup_es_retention.value }} --timestring '%Y%m%d%H%M%S'"
+    job: "/usr/bin/cronlock /usr/local/bin/curator delete snapshots --repository {{ backup_es_repository_name }} --time-unit {{ backup_es_retention.unit }} --older-than {{ backup_es_retention.value }} --timestring '%Y%m%d%H%M%S' 2>&1 >> /var/log/backup-elasticsearch.log"
     minute: "0"
     hour: "6"
-    day: "*"
-    month: "*"
-    weekday: "*"
 
 # Run only the validation task
 validate_task: false
@@ -59,7 +53,7 @@ backup_es_repository_name: s3_backup
 ### Optional
 backup_mongo_cron:
   name: snapshot
-  job: "/usr/bin/cronlock /usr/bin/mongo-backup.sh"
+  job: "/usr/bin/cronlock /usr/bin/mongo-backup.sh 2>&1 >> /var/log/mongo-backup.log"
   minute: "0"
   hour: "3"
   day: "*"

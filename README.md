@@ -41,6 +41,17 @@ Name and region of the bucket to use for backups on s3
 
 **Optional**
 
+Command to launch the backup :
+
+    backup_es_backup_cmd: ...
+2 type de backups :
+increment.
+Regular incremental snapshot from elasticsearch
+And need to launch the retention command
+
+Full : Play with elasticsearch behavior. Specify a new s3 directory each time to force elasticsearch to do a full snapshot.
+You should use this behavior if you want to let aws s3 bucket handle the retention. (For example migrate to glacier)
+
 Configure the retention policy of your backups :
 
     backup_es_retention:
@@ -87,6 +98,13 @@ For example you can use a `.boto` file. (http://boto.cloudhackers.com/en/latest/
 
 Role Variables
 --------------
+
+# References
+https://docs.mongodb.org/v3.0/tutorial/backup-small-sharded-cluster-with-mongodump/
+https://docs.mongodb.org/v3.0/administration/backup-sharded-clusters/
+# Expire configuration
+# doc http://docs.aws.amazon.com/cli/latest/reference/s3api/get-bucket-lifecycle.html
+http://docs.ansible.com/ansible/intro_configuration.html#sudo-flags
 
 **Required**
 

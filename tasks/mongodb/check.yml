@@ -12,4 +12,3 @@
 
 - name: "Set cron user for the playbook"
   set_fact: backup_mongo_cron_user="{{ backup_mongo_cron.user|default('root') }}"
-
