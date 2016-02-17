@@ -45,7 +45,39 @@ validate_task: false
 
 ### Extra
 backup_es_repository_name: s3_backup
-
 # NOTE : Display list of snapshots for debug purpose
 # curator show snapshots --repository {{ backup_es_bucket_name }}  --time-unit hours --older-than 1 --timestring '%Y%m%d%H%M%S'
 # More informations at : https://www.elastic.co/guide/en/elasticsearch/client/curator/current/index.html
+
+
+# === MONGO ===
+
+### Required
+# Name of the bucket to use for backups on s3
+# backup_mongo_bucket_name
+
+### Optional
+backup_mongo_cron:
+  name: snapshot
+  job: "/usr/bin/cronlock /usr/bin/mongo-backup.sh"
+  minute: "0"
+  hour: "3"
+  day: "*"
+  month: "*"
+
+backup_mongo_with_lock: false
+
+backup_mongo_lock_cmd: /usr/bin/mongo admin --eval "printjson(db.fsyncLock())"
+backup_mongo_unlock_cmd: /usr/bin/mongo admin --eval "printjson(db.fsyncUnlock())"
+backup_mongo_local_path: /home/backups/mongodb
+backup_mongo_cmd: /usr/bin/mongodump --oplog --out {{ backup_mongo_local_path }}
+backup_mongo_s3_path: mongo
+
+# Number of days to set on backup expire lifecycle policy for s3.
+backup_s3_expire_policy: {}
+#  prefix: ""
+#  permanently_delete: 365
+#  glacier_transition: 0
+#  name: "Backup {{ backup_type }} lifecycle policy"
+
+

@@ -1,3 +1,4 @@
+# Setup requirements for the role
 - hosts: all
   roles:
     - role: ansiblebit.oracle-java
@@ -17,10 +18,11 @@
           plugin_file: kopf
         - name: elasticsearch/elasticsearch-cloud-aws/2.7.1
           plugin_file: cloud-aws
-
-- hosts: all
-  pre_tasks:
+  tasks:
     - service: name=elasticsearch state=started
+
+# Test the role
+- hosts: all
   roles:
     - role: ansible-backup
       validate_task: true # Run the validator

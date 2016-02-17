@@ -6,3 +6,11 @@ _es_create_repository_body:
     bucket: "{{ backup_es_bucket_name }}"
     region: "{{ backup_es_bucket_region }}"
 
+
+default_backup_s3_expire_policy:
+  prefix: ""
+  permanently_delete: 365
+  glacier_transition: 0
+  name: "Backup {{ backup_type }} lifecycle policy"
+_backup_s3_expire_policy: "{{ default_backup_s3_expire_policy |combine(backup_s3_expire_policy) }}"
+

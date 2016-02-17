@@ -73,6 +73,56 @@ Enable the validate task callback to check if the role setup succeded
       backup_es_bucket_region: "{{ aws_default_region }}"
 ```
 
+Mongodb
+=======
+
+Based on https://docs.mongodb.org/v3.0/tutorial/backup-small-sharded-cluster-with-mongodump/
+Don't use for a bug shared mongodb cluster.
+
+Requirements
+------------
+
+To upload mongodb dump on s3 bucket, this role use `aws-cli`. It's important that you configured `aws-cli` for the user who will launch the cron backup command.
+For example you can use a `.boto` file. (http://boto.cloudhackers.com/en/latest/boto_config_tut.html)
+
+Role Variables
+--------------
+
+**Required**
+
+backup_mongo_bucket_name
+
+
+**Optional**
+    backup_mongo_cron:
+      name: snapshot
+      job: "/usr/bin/cronlock mongodump"
+      minute: "0"
+      hour: "3"
+      day: "*"
+      month: "*"
+      weekday: "*"
+
+
+
+Customize the bump
+backup_mongo_with_lock default false
+backup_mongo_lock_cmd: /usr/bin/mongo admin --eval "printjson(db.fsyncLock())"
+backup_mongo_unlock_cmd: /usr/bin/mongo admin --eval "printjson(db.fsyncUnlock())"
+
+backup_mongo_local_path: /opt/mongo-backups
+backup_mongo_cmd: /usr/bin/mongodump --oplog --out {{ backup_mongo_local_path }}
+
+
+
+
+
+**Example :**
+
+
+TODO : validate task
+  * Test that the cron user can access to the s3 registry
+
 Tests
 =====
 

@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# This file is handled by ansible
+
+S3_BUCKET_NAME={{ backup_mongo_bucket_name }}
+
+do_log()
+{
+    echo $(date +"[ %d/%m/%Y - %H:%M:%S ] #")" $@"
+}
+
+do_log "Start backup"
+
+# Secure check that dest repository is not empty.
+# We don't want to run a rm if we have done a mistake in ansible config
+if [ "x{{ backup_mongo_local_path }}" == "x" ]; then
+    do_log "Error backup_mongo_local_path is empty"
+    exit 1
+fi
+
+{% if backup_mongo_with_lock %}
+do_log "Lock mongodb"
+#Force file syncronization and lock writes
+{{ backup_mongo_lock_cmd }}
+{% endif %}
+
+do_log "Start backup in {{ backup_mongo_local_path }}"
+{{ backup_mongo_cmd }}
+ 
+{% if backup_mongo_with_lock %}
+do_log "UnLock mongodb"
+#Unlock database writes
+{{ backup_mongo_unlock_cmd }}
+{% endif %}
+
+TIMESTAMP=$(date +%F-%H%M)
+TAR_FILE=mongodb-$HOSTNAME-$TIMESTAMP.tar.gz
+
+# Add timestamp to backup
+tar -czf /tmp/$TAR_FILE -C {{ backup_mongo_local_path }} .
+ 
+do_log "Cleanup old backup {{ backup_mongo_local_path }}"
+rm -rf {{ backup_mongo_local_path }}
+
+# Upload to S3
+do_log "Upload file on s3 s3://{{ backup_mongo_bucket_name }}/{{ backup_mongo_s3_path }}/$TAR_FILE"
+/usr/local/bin/aws s3 cp /tmp/$TAR_FILE  s3://{{ backup_mongo_bucket_name }}/{{ backup_mongo_s3_path }}/$TAR_FILE
+
+UPLOAD_STATUS=$?
+
+do_log "Remove tar file"
+rm -f /tmp/$TAR_FILE
+
+if [[ $UPLOAD_STATUS != 0 ]];then
+    do_log "ERROR Upload tar /tmp/$TAR_FILE on s3 fail"
+    exit 1
+fi

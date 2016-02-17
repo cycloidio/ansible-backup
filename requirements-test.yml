@@ -3,3 +3,6 @@
  - src: aloysius.elasticsearch
  - src: ansiblebit.oracle-java
 
+ - src: git@bitbucket.org:cycloid-io/ansible-mongodb
+   scm: git
+   name: cycloid.mongodb

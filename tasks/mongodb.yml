@@ -1,0 +1,8 @@
+---
+
+ - include: mongodb/check.yml
+ - include: mongodb/dependencies.yml
+ - include: mongodb/configure.yml
+
+ - include: mongodb/validate.yml
+   when: validate_task

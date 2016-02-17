@@ -1,0 +1,26 @@
+# Setup requirements for the role
+- hosts: all
+  roles:
+    - role: cycloid.mongodb
+      mongodb_conf_replSet: localhost
+      tags: mongodb
+  tasks:
+    - service: name=mongod state=started
+    - copy:
+        content: "[Credentials]\naws_access_key_id = {{ aws_access_key_id }}\naws_secret_access_key = {{ aws_secret_access_key }}\n"
+        dest: /root/.boto
+        mode: 0600
+        group: root
+        owner: root
+
+# Test the role
+- hosts: all
+  roles:
+    - role: ansible-backup
+      validate_task: true # Run the validator
+      backup_type: mongodb
+      backup_mongo_bucket_name: "{{ backup_mongo_bucket_name }}"
+      tags:
+        - ansible-backup
+  tasks:
+    - fail: msg='DEBUG STOP KITCHEN'

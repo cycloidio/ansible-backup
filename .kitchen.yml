@@ -11,21 +11,33 @@ provisioner:
   ansible_verbose: true
   require_ansible_omnibus: true
   require_chef_for_busser: false # No need of chef
+  # Add address of the repository.
+  ssh_known_hosts:
+    - bitbucket.org
   requirements_path: requirements-test.yml
   ansible_extra_flags: <%= ENV['ANSIBLE_EXTRA_FLAGS'] %>
-  extra_vars:
-    aws_default_region: <%= ENV['AWS_DEFAULT_REGION'] %>
-    aws_access_key_id: <%= ENV['AWS_ACCESS_KEY_ID'] %>
-    aws_secret_access_key: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>
-    backup_es_bucket_name: <%= ENV['S3_BUCKET_NAME'] %>
 
 #additional_copy_path
 platforms:
   - name: debian-wheezy
     driver_config:
       image: cycloid
+      #image: debian
       #image: seraf/wheezy-kitchenci
       platform: debian
 
 suites:
-  - name: default
+  - name: elasticsearch
+    provisioner:
+      extra_vars:
+        aws_default_region: <%= ENV['AWS_DEFAULT_REGION'] %>
+        aws_access_key_id: <%= ENV['AWS_ACCESS_KEY_ID'] %>
+        aws_secret_access_key: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>
+        backup_es_bucket_name: <%= ENV['S3_BUCKET_NAME'] %>
+  - name: mongodb
+    provisioner:
+      extra_vars:
+        aws_default_region: <%= ENV['AWS_DEFAULT_REGION'] %>
+        aws_access_key_id: <%= ENV['AWS_ACCESS_KEY_ID'] %>
+        aws_secret_access_key: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>
+        backup_mongo_bucket_name: <%= ENV['S3_BUCKET_NAME'] %>

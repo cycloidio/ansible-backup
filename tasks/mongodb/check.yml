@@ -1,0 +1,15 @@
+---
+
+# Check args
+- name: "Check - backup_mongo_bucket_name are provided"
+  fail: msg='backup_mongo_bucket_name should be provided for es backup'
+  when: backup_mongo_bucket_name is not defined
+
+- name: "Check - aws-cli is installed"
+  command: which aws
+  ignore_errors: yes
+  register: _check_aws_cli
+
+- name: "Set cron user for the playbook"
+  set_fact: backup_mongo_cron_user="{{ backup_mongo_cron.user|default('root') }}"
+
