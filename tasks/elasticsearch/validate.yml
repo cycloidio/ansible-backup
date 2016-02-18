@@ -1,6 +1,6 @@
 ---
 
-- name: Validate access to the s3 bucket {{ backup_es_repository_name }}
+- name: "Validate access to the s3 bucket {{ backup_es_repository_name }}"
   uri: >
     url="http://{{ backup_es_host }}:{{ backup_es_port }}/_snapshot/{{ backup_es_repository_name }}/_verify"
     method=POST

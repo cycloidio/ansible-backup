@@ -10,7 +10,29 @@ The only things you need is to specify `backup_type` variable to define what kin
 elasticsearch
 =============
 
-For now on elasticsearch don't provide a "retention policy" feature for snapshots. So we are using the python module `elasticsearch-curator` to do the job (https://www.elastic.co/guide/en/elasticsearch/client/curator/index.html).
+For now on elasticsearch don't provide a "retention policy" feature for snapshots. So we are using the python module `elasticsearch-curator` and/or s3 bucket lifecyle policy to do the job (https://www.elastic.co/guide/en/elasticsearch/client/curator/index.html).
+
+Elasticsearch index snapshot process is incremental. In the process of making the index snapshot Elasticsearch analyses the list of the index files that are already stored in the repository and copies only files that were created or changed since the last snapshot. When a snapshot is deleted from a repository, Elasticsearch deletes all files that are associated with the deleted snapshot and not used by any other snapshots.  (https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-snapshots.html)
+
+We choose to have one distinct full backup by week. So by default the backup behavior is : 
+
+  * Create a directory inside the bucket with name : `%Y-week-%V` (year number and ISO week number).
+  * Do the backup.
+  * Next backup will create new directory inside the bucket s3 if we change year or month.
+
+So if you configure the cron to run snapshot command every days, the expected behavior is : 
+
+  * Each day elasticsearch do a new incremental snapshot.
+  * Each week, the script will create a new directory. So we do a new independant full backup each week.
+
+Additionally to this, you can use the `backup_es_retention` to limite the number of snapshot by directory (`backup_es_s3_path`). For example if you do one backup per hour
+and want to keep only hour snapshot for the last 3 days.
+
+
+Requirements
+------------
+
+We are using `elasticsearch-cloud-aws` plugin to backup on s3 bucket. So ensure configured AWS credentials for this plugin (https://github.com/elastic/elasticsearch-cloud-aws#generic-configuration)
 
 Exemple with `aloysius.elasticsearch` ansible role :
 
@@ -22,12 +44,9 @@ Exemple with `aloysius.elasticsearch` ansible role :
         cloud.aws.secret_key: "..."
 ```
 
-Requirements
-------------
+The default cron command for backup use `cronlock`. For Cycloid `cronlock` is provided by the `ansible-base` role. If you don't want `cronlock`, just override the `backup_es_cron` variable.
 
-We are using `elasticsearch-cloud-aws` plugin to backup on s3 bucket. So ensure configured AWS credentials for this plugin (https://github.com/elastic/elasticsearch-cloud-aws#generic-configuration)
-
-The default cron commands for snapshot and retention are using `cronlock`. For Cycloid `cronlock` is provided by the `ansible-base` role. If you don't want `cronlock`, just override the `backup_es_crons` variable.
+Last thing, to configure the s3 bucket lifecycle policy, this playbook use `aws-cli`. You should ensure the ssh user used to run the playbook is able to do aws commands on the bucket.
 
 Role Variables
 --------------
@@ -45,78 +64,43 @@ Enable the validate task callback to check if the role setup succeded
 
     validate_task: true
 
-Enable or not full backup (default false) :
 
-    backup_es_backup_full: false
-
-
-This role provide 2 type of backups for elasticsearch :
-
-`FULL`  Play with elasticsearch behavior to be able to do full or incremental backups. For the full, we specify a new s3 directory inside the bucket each time.
-That force elasticsearch to do a full snapshot.
-You should use this mode if you want to let aws s3 bucket handle the retention or migrate data to glacier after a while.
-
-Command to launch the backup : default increment
-
-    backup_es_backup_cmd: ...
-2 type de backups :
-increment.
-Regular incremental snapshot from elasticsearch
-And need to launch the retention command
-
-
-Full ou increment
-Backup commande. Astuce pour full c'est la mm chose, juste changer
-
-Rentention of snapshot in a directory.
-
-Retention policy in s3.
-You should know that elastic search do incremental backups.
-If you want to delete files from s3 or automatically migrate them to glacier, you have one tricks.
-
-
-The index snapshot process is incremental. In the process of making the index snapshot Elasticsearch analyses the list of the index files that are already stored in the repository and copies only files that were created or changed since the last snapshot.
-When a snapshot is deleted from a repository, Elasticsearch deletes all files that are associated with the deleted snapshot and not used by any other snapshots. 
-
-Elasticsearch do increment snapshot, refering to old one in the directory. Use the snapshot retention commande to
-reduce the number of snapshot in a direcory current directory to keep efficient backup time.
-https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-snapshots.html
-
-By default this module create a new directory in the bucket each month (prefix-month number). So that means a new full backup each month
-
-# Si le directory existe pas la 1er fois, ansible le crée pour valider le fonctionnement
-# Script For recreate each backup the directory.
-# Recreate syntaxe commande bash, on peux feinter avec $date pour créer un dossier par mois
-if backup_es_retention, enable retention cron
-
-
-Configure the retention policy of your backups :
+Limite the age of snapshot inside the `backup_es_s3_path` directory. The retention command is called after each backups. Default `0` disabled (https://www.elastic.co/guide/en/elasticsearch/client/curator/current/snapshots-subcommand.html)
 
     backup_es_retention:
       unit: days
-      value: 30
+      value: 0
 
-Cron commands to backup and apply the policy retention
+The retention part if you have a dynamic `backup_es_s3_path` can be handle with  s3 lifecycle policy : http://docs.aws.amazon.com/cli/latest/reference/s3api/get-bucket-lifecycle.html
+
+    # Example one : Every file in the s3 bucket will be removed after 365 days.
+    backup_s3_expire_policy:
+      permanently_delete: 365
+      glacier_transition: 0
+
+    # Example two : Every file myprefix* will be send on glacier after 60 days. And deleted from glacier after 365 days.
+    backup_s3_expire_policy:
+      prefix: "myprefix"
+      permanently_delete: 365
+      glacier_transition: 60
+
+
+S3 subdirectory name. You can use bash command inside with `'`. backup script ensure the directory exist at each backup. If not it will create this directory. The default example will ensure we have a new directory every week.
+
+    backup_es_s3_path: "elasticsearch-'$(date +%Y-week-%V)'"
+
+
+Configure the cron commands for the backup job.
 
     backup_es_cron:
-      - name: snapshot
-        ...
         minute: "0"
         hour: "3"
 
-ENSURE THE SSH USER HAVE S3 access to configure the policy
-# s3 policy: enable or not if >0
-# s3 directory name used in elastic-directory-create.sh
-# Retention time inside directory. (call at every backups)
-# Backup cron script
-#   * call create script.sh
-#   * call backup cmd
-#   * if retention >0 exec retention
 
+Command for backup and retention inside the elasticsearch-backup.sh script :
 
-
-
-
+    backup_es_backup_cmd: "/usr/local/bin/curator snapshot --ignor_...
+    backup_es_retention_cmd: "/usr/local/bin/curator delete snapsho...
 
 
 **Example :**
@@ -124,16 +108,18 @@ ENSURE THE SSH USER HAVE S3 access to configure the policy
 ```
   roles:
     - role: ansible-backup
+      validate_task: true # Run the validator
       backup_type: elasticsearch
       backup_es_bucket_name: "{{ backup_es_bucket_name }}"
       backup_es_bucket_region: "{{ aws_default_region }}"
+
 ```
 
 Mongodb
 =======
 
 Based on https://docs.mongodb.org/v3.0/tutorial/backup-small-sharded-cluster-with-mongodump/
-Don't use for a bug shared mongodb cluster.
+You should follow https://docs.mongodb.org/v3.0/administration/backup-sharded-clusters/ if you have a big shard cluster.
 
 Requirements
 ------------
@@ -141,15 +127,10 @@ Requirements
 To upload mongodb dump on s3 bucket, this role use `aws-cli`. It's important that you configured `aws-cli` for the user who will launch the cron backup command.
 For example you can use a `.boto` file. (http://boto.cloudhackers.com/en/latest/boto_config_tut.html)
 
+The default cron command for backup use `cronlock`. For Cycloid `cronlock` is provided by the `ansible-base` role. If you don't want `cronlock`, just override the `backup_mongo_cron` variable.
+
 Role Variables
 --------------
-
-# References
-https://docs.mongodb.org/v3.0/tutorial/backup-small-sharded-cluster-with-mongodump/
-https://docs.mongodb.org/v3.0/administration/backup-sharded-clusters/
-# Expire configuration
-# doc http://docs.aws.amazon.com/cli/latest/reference/s3api/get-bucket-lifecycle.html
-http://docs.ansible.com/ansible/intro_configuration.html#sudo-flags
 
 **Required**
 
@@ -157,9 +138,16 @@ backup_mongo_bucket_name
 
 
 **Optional**
+
+Enable the validate task callback to check if the role setup succeded
+
+    validate_task: true
+
+Backup cron for mongodb dump
+
     backup_mongo_cron:
       name: snapshot
-      job: "/usr/bin/cronlock mongodump"
+      job: "/usr/bin/cronlock ...
       minute: "0"
       hour: "3"
       day: "*"
@@ -167,24 +155,47 @@ backup_mongo_bucket_name
       weekday: "*"
 
 
+Do a lock during mongodump (https://docs.mongodb.org/manual/reference/method/db.fsyncLock/). Default `false`
 
-Customize the bump
-backup_mongo_with_lock default false
-backup_mongo_lock_cmd: /usr/bin/mongo admin --eval "printjson(db.fsyncLock())"
-backup_mongo_unlock_cmd: /usr/bin/mongo admin --eval "printjson(db.fsyncUnlock())"
-
-backup_mongo_local_path: /opt/mongo-backups
-backup_mongo_cmd: /usr/bin/mongodump --oplog --out {{ backup_mongo_local_path }}
+    backup_mongo_with_lock: false
 
 
+Configure directory on the machine and s3 for the backup. Local backup is deleted after the upload in s3.
+
+    backup_mongo_local_path: /home/backups/mongodb
+    backup_mongo_s3_path: mongo
+
+Configure the mongodb backup script commands :
+
+    backup_mongo_lock_cmd: /usr/bin/mongo admin --eval "printjson(db.fsyncLock())"
+    backup_mongo_unlock_cmd: /usr/bin/mongo admin --eval "printjson(db.fsyncUnlock())"
+    backup_mongo_cmd: /usr/bin/mongodump --oplog --out {{ backup_mongo_local_path }}
+
+
+Configure backup retention handled by s3 bucket lifecycle policy : http://docs.aws.amazon.com/cli/latest/reference/s3api/get-bucket-lifecycle.html
+
+    # Example one : Every file in the s3 bucket will be removed after 365 days.
+    backup_s3_expire_policy:
+      permanently_delete: 365
+      glacier_transition: 0
+
+    # Example two : Every file myprefix* will be send on glacier after 60 days. And deleted from glacier after 365 days.
+    backup_s3_expire_policy:
+      prefix: "myprefix"
+      permanently_delete: 365
+      glacier_transition: 60
 
 
 
 **Example :**
 
+```
+    - role: ansible-backup
+      validate_task: true # Run the validator
+      backup_type: mongodb
+      backup_mongo_bucket_name: "{{ backup_mongo_bucket_name }}"
+```
 
-TODO : validate task
-  * Test that the cron user can access to the s3 registry
 
 Tests
 =====

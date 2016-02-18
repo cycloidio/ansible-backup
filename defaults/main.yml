@@ -17,7 +17,7 @@
 backup_es_host: localhost
 backup_es_port: 9200
 
-# Number of snapshot to keep in the backup_es_s3_path directory. The retention command is called after each backups
+# Limite the age of snapshot inside the backup_es_s3_path directory. The retention command is called after each backups.
 # Default 0 disabled
 # https://www.elastic.co/guide/en/elasticsearch/client/curator/current/snapshots-subcommand.html
 # [hours|days|weeks|months]
@@ -25,17 +25,17 @@ backup_es_retention:
   unit: days
   value: 0
 
-
-# Cron commands to backup and apply the policy retention
+# Cron commands for elasticsearch-backup.sh job.
 backup_es_cron: {}
 #  name: snapshot
 #  job: "/usr/bin/cronlock /usr/bin/elasticsearch-backup.sh 2>&1 >> /var/log/backup-elasticsearch.log"
 #  minute: "0"
 #  hour: "3"
 
+backup_es_s3_path: "elasticsearch-'$(date +%Y-week-%V)'"
 
-backup_es_s3_path: "elasticsearch-'$(date +%m)'"
-backup_es_backup_cmd: "/usr/local/bin/curator snapshot --ignore_unavailable --partial --repository {{ backup_es_repository_name }} indices --all-indices 2>&1"
+# Command for backup and retention inside the elasticsearch-backup.sh script
+backup_es_backup_cmd: "/usr/local/bin/curator snapshot --ignore_unavailable --partial --repository {{ backup_es_repository_name }} indices --all-indices"
 backup_es_retention_cmd: "/usr/local/bin/curator delete snapshots --repository {{ backup_es_repository_name }} --time-unit {{ backup_es_retention.unit }} --older-than {{ backup_es_retention.value }} --timestring '%Y%m%d%H%M%S'"
 
 # Run only the validation task
@@ -47,6 +47,17 @@ backup_es_repository_name: s3_backup
 # curator show snapshots --repository {{ backup_es_bucket_name }}  --time-unit hours --older-than 1 --timestring '%Y%m%d%H%M%S'
 # More informations at : https://www.elastic.co/guide/en/elasticsearch/client/curator/current/index.html
 
+# Number of days to set on backup expire lifecycle policy for s3.
+backup_s3_expire_policy: {}
+#  prefix: ""
+#  permanently_delete: 365
+#  glacier_transition: 0
+#  name: "Backup {{ backup_type }} lifecycle policy"
+# Prefix :
+#  * Case sensitive. e.g. Myfolder/ or MyFolder/MyObject
+#  * Rule will apply to all the objects that start with the specified prefix
+#  * Don’t include the bucket name in the prefix
+
 
 # === MONGO ===
 
@@ -55,6 +66,10 @@ backup_es_repository_name: s3_backup
 # backup_mongo_bucket_name
 
 ### Optional
+
+# Run only the validation task
+validate_task: false
+
 backup_mongo_cron: {}
 #  name: snapshot
 #  job: "/usr/bin/cronlock /usr/bin/mongo-backup.sh 2>&1 >> /var/log/mongo-backup.log"
@@ -63,6 +78,7 @@ backup_mongo_cron: {}
 #  day: "*"
 #  month: "*"
 
+# Do a lock during the mongo dump (https://docs.mongodb.org/manual/reference/method/db.fsyncLock/)
 backup_mongo_with_lock: false
 
 backup_mongo_lock_cmd: /usr/bin/mongo admin --eval "printjson(db.fsyncLock())"
@@ -77,3 +93,7 @@ backup_s3_expire_policy: {}
 #  permanently_delete: 365
 #  glacier_transition: 0
 #  name: "Backup {{ backup_type }} lifecycle policy"
+# Prefix :
+#  * Case sensitive. e.g. Myfolder/ or MyFolder/MyObject
+#  * Rule will apply to all the objects that start with the specified prefix
+#  * Don’t include the bucket name in the prefix

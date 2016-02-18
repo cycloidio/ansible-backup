@@ -20,7 +20,6 @@
   become_user: "{{ backup_mongo_cron_user }}"
   environment:
     HOME: "{{ user_home.stdout }}"
-  when: s3_policy.changed
 
 - name: "create the local backup path {{ backup_mongo_local_path }}"
   file: path={{ backup_mongo_local_path }} state=directory mode=0755 recurse=yes

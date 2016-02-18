@@ -13,7 +13,7 @@
     - cron
   when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
 
-- name: Install curator command
-  pip:
-    name: elasticsearch-curator
-    state: present
+- pip: name=elasticsearch-curator state=present
+
+- pip: name=awscli state=latest
+  when: _check_aws_cli|failed

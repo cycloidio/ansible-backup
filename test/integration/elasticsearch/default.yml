@@ -20,6 +20,9 @@
           plugin_file: cloud-aws
   tasks:
     - service: name=elasticsearch state=started
+    - copy:
+        content: "[Credentials]\naws_access_key_id = {{ aws_access_key_id }}\naws_secret_access_key = {{ aws_secret_access_key }}\n"
+        dest: /home/kitchen/.boto
 
 # Test the role
 - hosts: all
@@ -31,5 +34,3 @@
       backup_es_bucket_region: "{{ aws_default_region }}"
       tags:
         - ansible-backup
-  tasks:
-    - fail: msg='DEBUGGGGGGGGGGGGGGGGGG'

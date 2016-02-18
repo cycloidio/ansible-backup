@@ -22,5 +22,3 @@
       backup_mongo_bucket_name: "{{ backup_mongo_bucket_name }}"
       tags:
         - ansible-backup
-  tasks:
-    - fail: msg='DEBUG STOP KITCHEN'

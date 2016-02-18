@@ -12,3 +12,9 @@
   uri: >
     url="http://{{ backup_es_host }}:{{ backup_es_port }}/_cluster/health"
     method=GET
+
+- name: "Check - aws-cli is installed"
+  command: which aws
+  ignore_errors: yes
+  register: _check_aws_cli
+

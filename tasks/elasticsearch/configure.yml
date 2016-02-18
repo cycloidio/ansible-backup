@@ -9,7 +9,6 @@
 # For this command, ensure the ssh user have access to s3 bucket
 - name: "Apply s3 backup lifecycle policy on the s3 bucket {{ backup_es_bucket_name }}"
   command: /usr/local/bin/aws s3api put-bucket-lifecycle --bucket {{ backup_es_bucket_name }}  --lifecycle-configuration file:///var/tmp/s3_backup_policy.json
-  when: s3_policy.changed
 
 - name: "Add elasticsearch backup script /usr/bin/elasticsearch-backup.sh"
   template: src=elasticsearch/elasticsearch-backup.sh.j2 dest=/usr/bin/elasticsearch-backup.sh owner=root group=root mode=0755
