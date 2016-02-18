@@ -41,7 +41,22 @@ Name and region of the bucket to use for backups on s3
 
 **Optional**
 
-Command to launch the backup :
+Enable the validate task callback to check if the role setup succeded
+
+    validate_task: true
+
+Enable or not full backup (default false) :
+
+    backup_es_backup_full: false
+
+
+This role provide 2 type of backups for elasticsearch :
+
+`FULL`  Play with elasticsearch behavior to be able to do full or incremental backups. For the full, we specify a new s3 directory inside the bucket each time.
+That force elasticsearch to do a full snapshot.
+You should use this mode if you want to let aws s3 bucket handle the retention or migrate data to glacier after a while.
+
+Command to launch the backup : default increment
 
     backup_es_backup_cmd: ...
 2 type de backups :
@@ -49,8 +64,31 @@ increment.
 Regular incremental snapshot from elasticsearch
 And need to launch the retention command
 
-Full : Play with elasticsearch behavior. Specify a new s3 directory each time to force elasticsearch to do a full snapshot.
-You should use this behavior if you want to let aws s3 bucket handle the retention. (For example migrate to glacier)
+
+Full ou increment
+Backup commande. Astuce pour full c'est la mm chose, juste changer
+
+Rentention of snapshot in a directory.
+
+Retention policy in s3.
+You should know that elastic search do incremental backups.
+If you want to delete files from s3 or automatically migrate them to glacier, you have one tricks.
+
+
+The index snapshot process is incremental. In the process of making the index snapshot Elasticsearch analyses the list of the index files that are already stored in the repository and copies only files that were created or changed since the last snapshot.
+When a snapshot is deleted from a repository, Elasticsearch deletes all files that are associated with the deleted snapshot and not used by any other snapshots. 
+
+Elasticsearch do increment snapshot, refering to old one in the directory. Use the snapshot retention commande to
+reduce the number of snapshot in a direcory current directory to keep efficient backup time.
+https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-snapshots.html
+
+By default this module create a new directory in the bucket each month (prefix-month number). So that means a new full backup each month
+
+# Si le directory existe pas la 1er fois, ansible le crée pour valider le fonctionnement
+# Script For recreate each backup the directory.
+# Recreate syntaxe commande bash, on peux feinter avec $date pour créer un dossier par mois
+if backup_es_retention, enable retention cron
+
 
 Configure the retention policy of your backups :
 
@@ -60,19 +98,26 @@ Configure the retention policy of your backups :
 
 Cron commands to backup and apply the policy retention
 
-    backup_es_crons:
+    backup_es_cron:
       - name: snapshot
         ...
         minute: "0"
         hour: "3"
-      - name: retention command
-        ...
-        minute: "0"
-        hour: "6"
 
-Enable the validate task callback to check if the role setup succeded
+ENSURE THE SSH USER HAVE S3 access to configure the policy
+# s3 policy: enable or not if >0
+# s3 directory name used in elastic-directory-create.sh
+# Retention time inside directory. (call at every backups)
+# Backup cron script
+#   * call create script.sh
+#   * call backup cmd
+#   * if retention >0 exec retention
 
-    validate_task: true
+
+
+
+
+
 
 **Example :**
 

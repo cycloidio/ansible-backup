@@ -17,22 +17,26 @@
 backup_es_host: localhost
 backup_es_port: 9200
 
+# Number of snapshot to keep in the backup_es_s3_path directory. The retention command is called after each backups
+# Default 0 disabled
 # https://www.elastic.co/guide/en/elasticsearch/client/curator/current/snapshots-subcommand.html
 # [hours|days|weeks|months]
 backup_es_retention:
   unit: days
-  value: 30
+  value: 0
+
 
 # Cron commands to backup and apply the policy retention
-backup_es_crons:
-  - name: snapshot
-    job: "/usr/bin/cronlock /usr/local/bin/curator snapshot --repository {{ backup_es_repository_name }} indices --all-indices 2>&1 >> /var/log/backup-elasticsearch.log"
-    minute: "0"
-    hour: "3"
-  - name: retention command
-    job: "/usr/bin/cronlock /usr/local/bin/curator delete snapshots --repository {{ backup_es_repository_name }} --time-unit {{ backup_es_retention.unit }} --older-than {{ backup_es_retention.value }} --timestring '%Y%m%d%H%M%S' 2>&1 >> /var/log/backup-elasticsearch.log"
-    minute: "0"
-    hour: "6"
+backup_es_cron: {}
+#  name: snapshot
+#  job: "/usr/bin/cronlock /usr/bin/elasticsearch-backup.sh 2>&1 >> /var/log/backup-elasticsearch.log"
+#  minute: "0"
+#  hour: "3"
+
+
+backup_es_s3_path: "elasticsearch-'$(date +%m)'"
+backup_es_backup_cmd: "/usr/local/bin/curator snapshot --ignore_unavailable --partial --repository {{ backup_es_repository_name }} indices --all-indices 2>&1"
+backup_es_retention_cmd: "/usr/local/bin/curator delete snapshots --repository {{ backup_es_repository_name }} --time-unit {{ backup_es_retention.unit }} --older-than {{ backup_es_retention.value }} --timestring '%Y%m%d%H%M%S'"
 
 # Run only the validation task
 validate_task: false
@@ -51,13 +55,13 @@ backup_es_repository_name: s3_backup
 # backup_mongo_bucket_name
 
 ### Optional
-backup_mongo_cron:
-  name: snapshot
-  job: "/usr/bin/cronlock /usr/bin/mongo-backup.sh 2>&1 >> /var/log/mongo-backup.log"
-  minute: "0"
-  hour: "3"
-  day: "*"
-  month: "*"
+backup_mongo_cron: {}
+#  name: snapshot
+#  job: "/usr/bin/cronlock /usr/bin/mongo-backup.sh 2>&1 >> /var/log/mongo-backup.log"
+#  minute: "0"
+#  hour: "3"
+#  day: "*"
+#  month: "*"
 
 backup_mongo_with_lock: false
 
@@ -73,5 +77,3 @@ backup_s3_expire_policy: {}
 #  permanently_delete: 365
 #  glacier_transition: 0
 #  name: "Backup {{ backup_type }} lifecycle policy"
-
-

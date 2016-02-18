@@ -42,6 +42,6 @@
     user={{ backup_mongo_cron_user }}
     state={{ item.state|default('present') }}
   with_items:
-    - "{{ backup_mongo_cron }}"
+    - "{{ _backup_mongo_cron }}"
   sudo: yes 
 

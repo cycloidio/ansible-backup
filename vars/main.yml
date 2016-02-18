@@ -5,6 +5,7 @@ _es_create_repository_body:
   settings:
     bucket: "{{ backup_es_bucket_name }}"
     region: "{{ backup_es_bucket_region }}"
+    base_path: "{{ backup_es_s3_path }}"
 
 
 default_backup_s3_expire_policy:
@@ -14,3 +15,17 @@ default_backup_s3_expire_policy:
   name: "Backup {{ backup_type }} lifecycle policy"
 _backup_s3_expire_policy: "{{ default_backup_s3_expire_policy |combine(backup_s3_expire_policy) }}"
 
+
+default_backup_mongo_cron:
+  name: snapshot
+  job: "/usr/bin/cronlock /usr/bin/mongo-backup.sh 2>&1 >> /var/log/mongo-backup.log"
+  minute: "0"
+  hour: "3"
+_backup_mongo_cron: "{{ default_backup_mongo_cron|combine(backup_mongo_cron) }}"
+
+default_backup_es_cron:
+  name: snapshot
+  job: "/usr/bin/cronlock /usr/bin/elasticsearch-backup.sh 2>&1 >> /var/log/backup-elasticsearch.log"
+  minute: "0"
+  hour: "3"
+_backup_es_cron: "{{ default_backup_es_cron|combine(backup_es_cron) }}"

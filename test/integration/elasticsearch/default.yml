@@ -31,3 +31,5 @@
       backup_es_bucket_region: "{{ aws_default_region }}"
       tags:
         - ansible-backup
+  tasks:
+    - fail: msg='DEBUGGGGGGGGGGGGGGGGGG'

@@ -1,15 +1,21 @@
 ---
 
-# Check args
-- name: "Check - backup_es_bucket_name and backup_es_bucket_region are provided"
-  fail: msg='backup_es_bucket_name and backup_es_bucket_region should be provided for es backup'
-  when: backup_es_bucket_name is not defined or backup_es_bucket_region is not defined
+# Gen s3 bucket policy for the expire
+- name: "Generate s3bucket policy file"
+  template: src=s3/lifecycle.json.j2 dest=/var/tmp/s3_backup_policy.json mode=0644
+  register: s3_policy
 
-- name: "Check - es cluster is alive"
-  uri: >
-    url="http://{{ backup_es_host }}:{{ backup_es_port }}/_cluster/health"
-    method=GET
+# Apply the s3 policy
+# For this command, ensure the ssh user have access to s3 bucket
+- name: "Apply s3 backup lifecycle policy on the s3 bucket {{ backup_es_bucket_name }}"
+  command: /usr/local/bin/aws s3api put-bucket-lifecycle --bucket {{ backup_es_bucket_name }}  --lifecycle-configuration file:///var/tmp/s3_backup_policy.json
+  when: s3_policy.changed
 
+- name: "Add elasticsearch backup script /usr/bin/elasticsearch-backup.sh"
+  template: src=elasticsearch/elasticsearch-backup.sh.j2 dest=/usr/bin/elasticsearch-backup.sh owner=root group=root mode=0755
+
+- name: "Add elasticsearch repository creation script /usr/bin/elasticsearch-create-backup-repository.sh"
+  template: src=elasticsearch/elasticsearch-create-backup-repository.sh.j2 dest=/usr/bin/elasticsearch-create-backup-repository.sh owner=root group=root mode=0755
 
 # Configure backups
 - name: "ES repository {{ backup_es_repository_name }} exist ?"
@@ -20,21 +26,15 @@
   ignore_errors: True
   register: backup_es_repository_status
 
-- name: Create ES repository {{ backup_es_repository_name }}
-  uri: >
-    url="http://{{ backup_es_host }}:{{ backup_es_port }}/_snapshot/{{ backup_es_repository_name }}"
-    method=POST
-    body_format=json
-    body="{{ _es_create_repository_body | to_json }}"
-    status_code=200
+- name: "Create ES repository {{ backup_es_repository_name }}"
+  command: /usr/bin/elasticsearch-create-backup-repository.sh
   when: backup_es_repository_status|failed
-
 
 # Add cron comands
 - name: "cron add snapshot and retention commands"
   cron: >
-    name="{{item.name}}"
-    job="{{ item.job}}"
+    name="{{ item.name }}"
+    job="{{ item.job }}"
     minute={{ item.minute|default('*') }}
     hour={{ item.hour|default('*') }}
     day={{ item.day|default('*') }}
@@ -43,6 +43,7 @@
     cron_file={{ item.file|default("es_backup") }}
     user={{ item.user|default('root') }}
     state={{ item.state|default('present') }}
-  with_items: backup_es_crons
+  with_items:
+    - "{{ _backup_es_cron }}"
   sudo: yes 
 

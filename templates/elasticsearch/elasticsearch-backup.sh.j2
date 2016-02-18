@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# This file is handled by ansible
+
+do_log()
+{
+    echo $(date +"[ %d/%m/%Y - %H:%M:%S ] #")" $@"
+}
+
+do_log "Start backup"
+
+do_log "Ensure/create backup-repository"
+/usr/bin/elasticsearch-create-backup-repository.sh
+
+do_log "Start backup"
+{{ backup_es_backup_cmd }}
+
+{% if backup_es_retention.value > 0 %}
+do_log "Do retention command"
+{{ backup_es_retention_cmd }}
+{% endif %}
