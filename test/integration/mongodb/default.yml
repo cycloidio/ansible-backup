@@ -6,12 +6,17 @@
       tags: mongodb
   tasks:
     - service: name=mongod state=started
+    # For the cron
     - copy:
         content: "[Credentials]\naws_access_key_id = {{ aws_access_key_id }}\naws_secret_access_key = {{ aws_secret_access_key }}\n"
         dest: /root/.boto
         mode: 0600
         group: root
         owner: root
+    # For the apply policy on ansible host
+    - copy:
+        content: "[Credentials]\naws_access_key_id = {{ aws_access_key_id }}\naws_secret_access_key = {{ aws_secret_access_key }}\n"
+        dest: /home/kitchen/.boto
 
 # Test the role
 - hosts: all

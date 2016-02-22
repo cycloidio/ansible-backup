@@ -5,4 +5,4 @@
  - include: elasticsearch/configure.yml
 
  - include: elasticsearch/validate.yml
-   when: validate_task
+   when: validate_task is defined and validate_task

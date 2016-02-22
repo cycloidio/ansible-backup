@@ -1,5 +1,12 @@
 ---
 
+# Used by aws cli with sudo commands
+# If you are not able to change sudo_flags, the HOME variable when using become_user
+# will be the HOME from the ssh user.
+- name: "Get HOME directory for user {{ backup_mongo_cron_user }}"
+  shell: 'getent passwd {{ backup_mongo_cron_user }} | cut -d: -f6'
+  register: user_home
+
 - name: Validate create tmpfile to test s3 push.
   file: path=/tmp/ansible-backup-mongo.test state=touch
 - debug: var=backup_mongo_cron_user
