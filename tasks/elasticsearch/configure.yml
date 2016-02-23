@@ -48,16 +48,16 @@
 # Add cron comands
 - name: "cron add snapshot and retention commands"
   cron: >
-    name="{{ item.name|default(default_backup_es_cron.name) }}"
-    job="{{ item.job|default(default_backup_es_cron.job) }}"
-    minute="{{ item.minute|default(default_backup_es_cron.minute) }}"
-    hour="{{ item.hour|default(default_backup_es_cron.hour) }}"
-    day="{{ item.day|default(default_backup_es_cron.day) }}"
-    month="{{ item.month|default(default_backup_es_cron.month) }}"
-    weekday="{{ item.weekday||default(default_backup_es_cron.weekday) }}"
-    cron_file="{{ item.file|default(default_backup_es_cron.cron_file) }}"
-    user="{{ item.user|default(default_backup_es_cron.user) }}"
-    state="{{ item.state|default(default_backup_es_cron.state) }}"
+    name="{{ item.name | default(default_backup_es_cron.name) }}"
+    job="{{ item.job | default(default_backup_es_cron.job) }}"
+    minute="{{ item.minute | default(default_backup_es_cron.minute) }}"
+    hour="{{ item.hour | default(default_backup_es_cron.hour) }}"
+    day="{{ item.day | default(default_backup_es_cron.day) }}"
+    month="{{ item.month | default(default_backup_es_cron.month) }}"
+    weekday="{{ item.weekday | default(default_backup_es_cron.weekday) }}"
+    cron_file="{{ item.file | default(default_backup_es_cron.cron_file) }}"
+    user="{{ item.user | default(default_backup_es_cron.user) }}"
+    state="{{ item.state | default(default_backup_es_cron.state) }}"
   with_items:
     - "{{ backup_es_cron }}"
   sudo: yes 
