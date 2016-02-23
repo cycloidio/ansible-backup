@@ -6,7 +6,7 @@
 # Legacy parameter for copy module with template. In ansible 1.9.4 with multiple include in sub directory we can't
 # use simply template. Ansible still looking in task/template/... directory
 # Get ansible version
- - name: "Get HOME directory for user {{ backup_mongo_cron_user }}"
+ - name: "Get ansible version for legacy template path"
    shell: 'ansible --version | awk "/^ansible/{print $2}" | cut -d. -f1'
    register: ansible_version
    run_once: true
