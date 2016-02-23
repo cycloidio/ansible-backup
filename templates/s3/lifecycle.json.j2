@@ -1,0 +1,19 @@
+{
+    "Rules": [
+        {
+            "Status": "Enabled",
+            "Prefix": "{{ backup_s3_expire_policy.prefix | default(default_backup_s3_expire_policy.prefix) }}",
+            "Expiration": {
+                "Days": {{ backup_s3_expire_policy.permanently_delete | default(default_backup_s3_expire_policy.permanently_delete) }}
+            },
+{% if backup_s3_expire_policy.glacier_transition is defined and backup_s3_expire_policy.glacier_transition > 0 %}
+            "Transition": {
+                "Days": {{ backup_s3_expire_policy.glacier_transition | default(default_backup_s3_expire_policy.glacier_transition) }},
+                "StorageClass": "GLACIER"
+            },
+{% endif %}
+            "ID": "{{ backup_s3_expire_policy.name | default(default_backup_s3_expire_policy.name) }}"
+        }
+    ]
+}
+
