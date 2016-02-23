@@ -5,6 +5,7 @@
 # Args : (elasticsearch|mongodb)
 # backup_type: 
 
+backup_s3_expire_policy: {}
 
 # === ES ===
 

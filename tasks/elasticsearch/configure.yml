@@ -2,28 +2,28 @@
 
 - name: "Apply s3 backup lifecycle policy on the s3 bucket {{ backup_es_bucket_name }}"
   s3_lifecycle:
-    rule_id: "{{ _backup_s3_expire_policy.name }}"
     name: "{{ backup_es_bucket_name }}"
-    transition_days: "{ _backup_s3_expire_policy.glacier_transition }}"
-    expiration_days: "{{ _backup_s3_expire_policy.permanently_delete }}"
-    prefix: "{{ _backup_s3_expire_policy.prefix }}"
+    rule_id: "{{ backup_s3_expire_policy.name|default(default_backup_s3_expire_policy.name) }}"
+    transition_days: "{ backup_s3_expire_policy.glacier_transition|default(default_backup_s3_expire_policy.glacier_transition) }}"
+    expiration_days: "{{ backup_s3_expire_policy.permanently_delete|default(default_backup_s3_expire_policy.permanently_delete) }}"
+    prefix: "{{ backup_s3_expire_policy.prefix|default(default_backup_s3_expire_policy.prefix) }}"
     status: enabled
     state: present
   run_once: true
   delegate_to: 127.0.0.1
-  when: _backup_s3_expire_policy.glacier_transition > 0
+  when: backup_s3_expire_policy.glacier_transition is defined and backup_s3_expire_policy.glacier_transition > 0
 
 - name: "Apply s3 backup lifecycle policy on the s3 bucket {{ backup_es_bucket_name }}"
   s3_lifecycle:
-    rule_id: "{{ _backup_s3_expire_policy.name }}"
     name: "{{ backup_es_bucket_name }}"
-    expiration_days: "{{ _backup_s3_expire_policy.permanently_delete }}"
-    prefix: "{{ _backup_s3_expire_policy.prefix }}"
+    rule_id: "{{ backup_s3_expire_policy.name|default(default_backup_s3_expire_policy.name) }}"
+    expiration_days: "{{ backup_s3_expire_policy.permanently_delete|default(default_backup_s3_expire_policy.permanently_delete) }}"
+    prefix: "{{ backup_s3_expire_policy.prefix|default(default_backup_s3_expire_policy.prefix) }}"
     status: enabled
     state: present
   run_once: true
   delegate_to: 127.0.0.1
-  when: _backup_s3_expire_policy.glacier_transition == 0
+  when: backup_s3_expire_policy.glacier_transition is not defined or backup_s3_expire_policy.glacier_transition == 0
 
 
 - name: "Add elasticsearch backup script /usr/bin/elasticsearch-backup.sh"
@@ -48,17 +48,17 @@
 # Add cron comands
 - name: "cron add snapshot and retention commands"
   cron: >
-    name="{{ item.name }}"
-    job="{{ item.job }}"
-    minute={{ item.minute|default('*') }}
-    hour={{ item.hour|default('*') }}
-    day={{ item.day|default('*') }}
-    month={{ item.month|default('*') }}
-    weekday={{ item.weekday|default('*') }}
-    cron_file={{ item.file|default("es_backup") }}
-    user={{ item.user|default('root') }}
-    state={{ item.state|default('present') }}
+    name="{{ item.name|default(default_backup_es_cron.name) }}"
+    job="{{ item.job|default(default_backup_es_cron.job) }}"
+    minute="{{ item.minute|default(default_backup_es_cron.minute) }}"
+    hour="{{ item.hour|default(default_backup_es_cron.hour) }}"
+    day="{{ item.day|default(default_backup_es_cron.day) }}"
+    month="{{ item.month|default(default_backup_es_cron.month) }}"
+    weekday="{{ item.weekday||default(default_backup_es_cron.weekday) }}"
+    cron_file="{{ item.file|default(default_backup_es_cron.cron_file) }}"
+    user="{{ item.user|default(default_backup_es_cron.user) }}"
+    state="{{ item.state|default(default_backup_es_cron.state) }}"
   with_items:
-    - "{{ _backup_es_cron }}"
+    - "{{ backup_es_cron }}"
   sudo: yes 
 
