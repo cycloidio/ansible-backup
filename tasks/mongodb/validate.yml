@@ -32,3 +32,4 @@
   become_user: "{{ backup_mongo_cron_user }}"
   environment:
     HOME: "{{ user_home.stdout }}"
+  run_once: true
