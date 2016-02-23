@@ -3,10 +3,10 @@
 - name: "Apply s3 backup lifecycle policy on the s3 bucket {{ backup_mongo_bucket_name }}"
   s3_lifecycle:
     name: "{{ backup_mongo_bucket_name }}"
-    rule_id: "{{ backup_s3_expire_policy.name|default(default_backup_s3_expire_policy.name) }}"
-    transition_days: "{ backup_s3_expire_policy.glacier_transition|default(default_backup_s3_expire_policy.glacier_transition) }}"
-    expiration_days: "{{ backup_s3_expire_policy.permanently_delete|default(default_backup_s3_expire_policy.permanently_delete) }}"
-    prefix: "{{ backup_s3_expire_policy.prefix|default(default_backup_s3_expire_policy.prefix) }}"
+    rule_id: "{{ backup_s3_expire_policy.name | default(default_backup_s3_expire_policy.name) }}"
+    transition_days: "{ backup_s3_expire_policy.glacier_transition | default(default_backup_s3_expire_policy.glacier_transition) }}"
+    expiration_days: "{{ backup_s3_expire_policy.permanently_delete | default(default_backup_s3_expire_policy.permanently_delete) }}"
+    prefix: "{{ backup_s3_expire_policy.prefix | default(default_backup_s3_expire_policy.prefix) }}"
     status: enabled
     state: present
   run_once: true
@@ -16,9 +16,9 @@
 - name: "Apply s3 backup lifecycle policy on the s3 bucket {{ backup_mongo_bucket_name }}"
   s3_lifecycle:
     name: "{{ backup_mongo_bucket_name }}"
-    rule_id: "{{ backup_s3_expire_policy.name|default(default_backup_s3_expire_policy.name) }}"
-    expiration_days: "{{ backup_s3_expire_policy.permanently_delete|default(default_backup_s3_expire_policy.permanently_delete) }}"
-    prefix: "{{ backup_s3_expire_policy.prefix|default(default_backup_s3_expire_policy.prefix) }}"
+    rule_id: "{{ backup_s3_expire_policy.name | default(default_backup_s3_expire_policy.name) }}"
+    expiration_days: "{{ backup_s3_expire_policy.permanently_delete | default(default_backup_s3_expire_policy.permanently_delete) }}"
+    prefix: "{{ backup_s3_expire_policy.prefix | default(default_backup_s3_expire_policy.prefix) }}"
     status: enabled
     state: present
   run_once: true
@@ -34,16 +34,16 @@
 # Add cron comands
 - name: "cron add backup command"
   cron: >
-    name="{{ item.name|default(default_backup_mongo_cron.name) }}"
-    job="{{ item.job|default(default_backup_mongo_cron.job) }}"
-    minute="{{ item.minute|default(default_backup_mongo_cron.minute) }}"
-    hour="{{ item.hour|default(default_backup_mongo_cron.hour) }}"
-    day="{{ item.day|default(default_backup_mongo_cron.day) }}"
-    month="{{ item.month|default(default_backup_mongo_cron.month) }}"
-    weekday="{{ item.weekday||default(default_backup_mongo_cron.weekday) }}"
-    cron_file="{{ item.file|default(default_backup_mongo_cron.cron_file) }}"
+    name="{{ item.name | default(default_backup_mongo_cron.name) }}"
+    job="{{ item.job | default(default_backup_mongo_cron.job) }}"
+    minute="{{ item.minute | default(default_backup_mongo_cron.minute) }}"
+    hour="{{ item.hour | default(default_backup_mongo_cron.hour) }}"
+    day="{{ item.day | default(default_backup_mongo_cron.day) }}"
+    month="{{ item.month | default(default_backup_mongo_cron.month) }}"
+    weekday="{{ item.weekday | default(default_backup_mongo_cron.weekday) }}"
+    cron_file="{{ item.file | default(default_backup_mongo_cron.cron_file) }}"
     user="{{ backup_mongo_cron_user }}"
-    state="{{ item.state|default(default_backup_mongo_cron.state) }}"
+    state="{{ item.state | default(default_backup_mongo_cron.state) }}"
   with_items:
     - "{{ backup_mongo_cron }}"
   sudo: yes 
