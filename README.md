@@ -232,9 +232,9 @@ To migrate to `s3_lifecycle` module, your commit should looks like to https://bi
 To add this behavior you could have a look of these commits : `git diff c3c2668...fea7d70`
 
 The idea of `combine` behavior : 
+
   * variable `foo` in defaults. Foo is the array or part of the array a user want to override.
   * variable `default_foo` in vars directory is the defined role default variable.
   * variable `_foo` this variable is used inside the role. It result of `combine` between `foo` and `default_foo`
 
 **3)** Remove the usage of `ansible_template_path_legacy` due to a bug with ansible `1.9.4`.
-
