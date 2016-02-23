@@ -7,6 +7,10 @@
 
 backup_s3_expire_policy: {}
 
+# Legacy parameter for copy module with template. In ansible 1.9.4 with multiple include in sub directory we can't
+# use simply template. Ansible still looking in task/template/... directory
+ansible_template_path_legacy: ""
+
 # === ES ===
 
 ### Required

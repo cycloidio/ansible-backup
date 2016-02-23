@@ -2,7 +2,7 @@
 
 # Gen s3 bucket policy for the expire
 - name: "Generate s3bucket policy file"
-  template: src=s3/lifecycle.json.j2 dest=/var/tmp/s3_backup_policy.json mode=0644
+  template: src="{{ _ansible_template_path_legacy }}s3/lifecycle.json.j2" dest=/var/tmp/s3_backup_policy.json mode=0644
   register: s3_policy
   run_once: true
   delegate_to: 127.0.0.1
@@ -15,10 +15,10 @@
   delegate_to: 127.0.0.1
 
 - name: "Add elasticsearch backup script /usr/bin/elasticsearch-backup.sh"
-  template: src=elasticsearch/elasticsearch-backup.sh.j2 dest=/usr/bin/elasticsearch-backup.sh owner=root group=root mode=0755
+  template: src="{{ _ansible_template_path_legacy }}elasticsearch/elasticsearch-backup.sh.j2" dest=/usr/bin/elasticsearch-backup.sh owner=root group=root mode=0755
 
 - name: "Add elasticsearch repository creation script /usr/bin/elasticsearch-create-backup-repository.sh"
-  template: src=elasticsearch/elasticsearch-create-backup-repository.sh.j2 dest=/usr/bin/elasticsearch-create-backup-repository.sh owner=root group=root mode=0755
+  template: src="{{ _ansible_template_path_legacy }}elasticsearch/elasticsearch-create-backup-repository.sh.j2" dest=/usr/bin/elasticsearch-create-backup-repository.sh owner=root group=root mode=0755
 
 # Configure backups
 - name: "ES repository {{ backup_es_repository_name }} exist ?"
