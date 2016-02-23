@@ -6,19 +6,13 @@
 # Legacy parameter for copy module with template. In ansible 1.9.4 with multiple include in sub directory we can't
 # use simply template. Ansible still looking in task/template/... directory
 # Get ansible version
- - name: "Get ansible version for legacy template path"
-   shell: 'ansible --version | awk "/^ansible/{print $2}" | cut -d. -f1'
-   register: ansible_version
-   run_once: true
-   delegate_to: 127.0.0.1
  
  - set_fact:
       ansible_template_path_legacy: '../../templates/'
-   when: ansible_version.stdout | int < 2
+   when: ansible_version.major < 2
 
  - set_fact:
       ansible_template_path_legacy: ''
-   when: ansible_version.stdout | int >= 2
+   when: ansible_version.major >= 2
 
- - debug: var=ansible_template_path_legacy
  - include: "{{ backup_type }}.yml"
