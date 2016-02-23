@@ -219,3 +219,22 @@ License
 
 cycloid.io
 
+
+Migrate this module on ansible 2 notes
+=======================================
+
+**1)** Because of ansible `1.9.4` we removed the usage of `s3_lifecycle` module. The drawback is that we use aws cli with a template `s3/lifecycle.json.j2`. Aws cli don't do
+incremental changes. It remove all existing policy on the bucket to apply them.
+
+To migrate to `s3_lifecycle` module, your commit should looks like to https://bitbucket.org/cycloid-io/ansible-backup/commits/536c18fd4a3e2ef1c58183de4728da39708b8d36?at=master
+
+**2)** The second point is to use `combine` on array. Combine is a way to merge 2 dict. I use it to have default dict value and be able to override only one field.
+To add this behavior you could have a look of these commits : `git diff c3c2668...fea7d70`
+
+The idea of `combine` behavior : 
+  * variable `foo` in defaults. Foo is the array or part of the array a user want to override.
+  * variable `default_foo` in vars directory is the defined role default variable.
+  * variable `_foo` this variable is used inside the role. It result of `combine` between `foo` and `default_foo`
+
+**3)** Remove the usage of `ansible_template_path_legacy` due to a bug with ansible `1.9.4`.
+
