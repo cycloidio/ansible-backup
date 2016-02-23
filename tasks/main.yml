@@ -13,7 +13,11 @@
    delegate_to: 127.0.0.1
  
  - set_fact:
-      _ansible_template_path_legacy: '../../templates'
+      ansible_template_path_legacy: '../../templates'
    when: ansible_version|int < 2
+
+ - set_fact:
+      ansible_template_path_legacy: ''
+   when: ansible_version|int >= 2
 
  - include: "{{ backup_type }}.yml"

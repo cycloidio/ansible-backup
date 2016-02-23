@@ -2,7 +2,7 @@
 
 # Gen s3 bucket policy for the expire
 - name: "Generate s3bucket policy file"
-  template: src="{{ _ansible_template_path_legacy }}s3/lifecycle.json.j2" dest=/var/tmp/s3_backup_policy.json mode=0644
+  template: src="{{ ansible_template_path_legacy }}s3/lifecycle.json.j2" dest=/var/tmp/s3_backup_policy.json mode=0644
   register: s3_policy
   run_once: true
   delegate_to: 127.0.0.1
@@ -18,7 +18,7 @@
   file: path={{ backup_mongo_local_path }} state=directory mode=0755 recurse=yes
 
 - name: "Add mongodb backup script /usr/bin/mongo-backup.sh"
-  template: src="{{ _ansible_template_path_legacy }}mongodb/mongo-backup.sh.j2" dest=/usr/bin/mongo-backup.sh owner=root group=root mode=0755
+  template: src="{{ ansible_template_path_legacy }}mongodb/mongo-backup.sh.j2" dest=/usr/bin/mongo-backup.sh owner=root group=root mode=0755
 
 # Add cron comands
 - name: "cron add backup command"
