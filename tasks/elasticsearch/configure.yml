@@ -6,6 +6,7 @@
   register: s3_policy
   run_once: true
   delegate_to: 127.0.0.1
+  when: backup_s3_expire_policy.permanently_delete is defined and backup_s3_expire_policy.permanently_delete > 0
 
 # Apply the s3 policy
 # For this command, ensure the ssh user have access to s3 bucket
@@ -13,6 +14,7 @@
   command: /usr/local/bin/aws s3api put-bucket-lifecycle --bucket {{ backup_es_bucket_name }}  --lifecycle-configuration file:///var/tmp/s3_backup_policy.json
   run_once: true
   delegate_to: 127.0.0.1
+  when: backup_s3_expire_policy.permanently_delete is defined and backup_s3_expire_policy.permanently_delete > 0
 
 - name: "Add elasticsearch backup script /usr/bin/elasticsearch-backup.sh"
   template: src="{{ ansible_template_path_legacy }}elasticsearch/elasticsearch-backup.sh.j2" dest=/usr/bin/elasticsearch-backup.sh owner=root group=root mode=0755

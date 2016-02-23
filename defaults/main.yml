@@ -51,7 +51,7 @@ backup_es_repository_name: s3_backup
 # Number of days to set on backup expire lifecycle policy for s3.
 #backup_s3_expire_policy:
 #  prefix: ""
-#  permanently_delete: 365
+#  permanently_delete: 0
 #  glacier_transition: 0
 #  name: "Backup {{ backup_type }} lifecycle policy"
 # Prefix :
@@ -91,7 +91,7 @@ backup_mongo_s3_path: mongo
 # Number of days to set on backup expire lifecycle policy for s3.
 # backup_s3_expire_policy:
 #  prefix: ""
-#  permanently_delete: 365
+#  permanently_delete: 0
 #  glacier_transition: 0
 #  name: "Backup {{ backup_type }} lifecycle policy"
 # Prefix :

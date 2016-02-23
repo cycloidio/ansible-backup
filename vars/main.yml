@@ -10,7 +10,7 @@ _es_create_repository_body:
 
 default_backup_s3_expire_policy:
   prefix: ""
-  permanently_delete: 365
+  permanently_delete: 0
   glacier_transition: 0
   name: "Backup {{ backup_type }} lifecycle policy"
 #_backup_s3_expire_policy: "{{ default_backup_s3_expire_policy |combine(backup_s3_expire_policy|default({})) }}"
