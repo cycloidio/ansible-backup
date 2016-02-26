@@ -162,7 +162,7 @@ Do a lock during mongodump (https://docs.mongodb.org/manual/reference/method/db.
 
 Configure directory on the machine and s3 for the backup. Local backup is deleted after the upload in s3.
 
-    backup_mongo_local_path: /home/backups/mongodb
+    backup_mongo_local_path: /home/admin/backups/mongodb
     backup_mongo_s3_path: mongo
 
 Configure the mongodb backup script commands :
@@ -244,7 +244,7 @@ Backup cron for postgresqldb dump
 
 Configure directory on the machine and s3 for the backup. Local backup is deleted after the upload in s3.
 
-    backup_postgresql_local_path: /home/backups/postgresql
+    backup_postgresql_local_path: /home/admin/backups/postgresql
     backup_postgresql_s3_path: postgresql
 
 Configure the postgresql backup script commands :
