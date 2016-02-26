@@ -25,5 +25,8 @@
       validate_task: true # Run the validator
       backup_type: mongodb
       backup_mongo_bucket_name: "{{ backup_mongo_bucket_name }}"
+      backup_s3_expire_policy:
+        permanently_delete: 1
+
       tags:
         - ansible-backup

@@ -98,3 +98,42 @@ backup_mongo_s3_path: mongo
 #  * Case sensitive. e.g. Myfolder/ or MyFolder/MyObject
 #  * Rule will apply to all the objects that start with the specified prefix
 #  * Don’t include the bucket name in the prefix
+
+
+# === POSTGRESQL ===
+
+### Required
+# Name of the bucket to use for backups on s3
+# backup_postgresql_bucket_name
+
+# Credentials to connect to postgresql
+# backup_postgresql_password
+# backup_postgresql_host
+# backup_postgresql_user
+
+### Optional
+
+backup_postgresql_cron: {}
+#  name: snapshot
+#  job: "/usr/bin/cronlock /usr/bin/postgresql-backup.sh 2>&1 >> /var/log/postgresql-backup.log"
+#  minute: "0"
+#  hour: "3"
+#  day: "*"
+#  month: "*"
+
+backup_postgresql_local_path: /home/admin/backups/postgresql
+backup_postgresql_s3_path: postgresql
+
+# You can add --jobs=njobs if you want to improve the dump time
+backup_postgresql_cmd: PGPASSWORD={{ backup_postgresql_password }} pg_dump -b -h {{ backup_postgresql_host }} -U {{ backup_postgresql_user }} -Fc $DB > {{ backup_postgresql_local_path }}/$DB.bin
+
+# Number of days to set on backup expire lifecycle policy for s3.
+# backup_s3_expire_policy:
+#  prefix: ""
+#  permanently_delete: 0
+#  glacier_transition: 0
+#  name: "Backup {{ backup_type }} lifecycle policy"
+# Prefix :
+#  * Case sensitive. e.g. Myfolder/ or MyFolder/MyObject
+#  * Rule will apply to all the objects that start with the specified prefix
+#  * Don’t include the bucket name in the prefix

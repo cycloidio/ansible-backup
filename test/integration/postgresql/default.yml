@@ -1,0 +1,44 @@
+# Setup requirements for the role
+- hosts: all
+  roles:
+  tasks:
+    - apt: name=postgresql state=present
+    - service: name=postgresql state=started
+    - meta: flush_handlers
+    # postgresql_user: require psycopg2
+    - apt: name=libpq-dev state=present
+    - pip: name=psycopg2 state=present
+    - postgresql_db: name=foodb
+      become: yes
+      become_user: postgres
+    #- postgresql_user: db=foodb name=foo password=foo priv=ALL state=present role_attr_flags=SUPERUSER
+    - postgresql_user: name=foo password=foo state=present role_attr_flags=SUPERUSER,LOGIN
+      become: yes
+      become_user: postgres
+    # For the cron
+    - copy:
+        content: "[Credentials]\naws_access_key_id = {{ aws_access_key_id }}\naws_secret_access_key = {{ aws_secret_access_key }}\n"
+        dest: /root/.boto
+        mode: 0600
+        group: root
+        owner: root
+    # For the apply policy on ansible host
+    - copy:
+        content: "[Credentials]\naws_access_key_id = {{ aws_access_key_id }}\naws_secret_access_key = {{ aws_secret_access_key }}\n"
+        dest: /home/kitchen/.boto
+
+# Test the role
+- hosts: all
+  roles:
+    - role: ansible-backup
+      validate_task: true # Run the validator
+      backup_type: postgresql
+      backup_postgresql_bucket_name: "{{ backup_postgresql_bucket_name }}"
+      backup_postgresql_password: foo
+      backup_postgresql_host: localhost
+      backup_postgresql_user: foo
+
+      backup_s3_expire_policy:
+        permanently_delete: 1
+      tags:
+        - ansible-backup

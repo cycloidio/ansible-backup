@@ -43,3 +43,15 @@ default_backup_es_cron:
 #_backup_es_cron: "{{ default_backup_es_cron|combine(backup_es_cron) }}"
 
 
+default_backup_postgresql_cron:
+  name: snapshot
+  job: "/usr/bin/cronlock /usr/bin/postgresql-backup.sh 2>&1 >> /var/log/postgresql-backup.log"
+  minute: "0"
+  hour: "3"
+  day: '*'
+  month: '*'
+  weekday: '*'
+  cron_file: "postgresql_backup"
+  user: 'root'
+  state: present
+#_backup_postgresql_cron: "{{ default_backup_postgresql_cron|combine(backup_postgresql_cron) }}"

@@ -1,0 +1,26 @@
+---
+
+# Check args
+- name: "Check - backup_postgresql_password are provided"
+  fail: msg='backup_postgresql_password should be provided for es backup'
+  when: backup_postgresql_password is not defined
+
+- name: "Check - backup_postgresql_host are provided"
+  fail: msg='backup_postgresql_host should be provided for es backup'
+  when: backup_postgresql_host is not defined
+
+- name: "Check - backup_postgresql_user are provided"
+  fail: msg='backup_postgresql_user should be provided for es backup'
+  when: backup_postgresql_user is not defined
+
+- name: "Check - backup_postgresql_bucket_name are provided"
+  fail: msg='backup_postgresql_bucket_name should be provided for es backup'
+  when: backup_postgresql_bucket_name is not defined
+
+- name: "Check - aws-cli is installed"
+  command: which aws
+  ignore_errors: yes
+  register: _check_aws_cli
+
+- name: "Set cron user for the playbook"
+  set_fact: backup_postgresql_cron_user="{{ backup_postgresql_cron.user|default('root') }}"

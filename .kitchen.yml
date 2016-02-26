@@ -41,3 +41,10 @@ suites:
         aws_access_key_id: <%= ENV['AWS_ACCESS_KEY_ID'] %>
         aws_secret_access_key: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>
         backup_mongo_bucket_name: <%= ENV['S3_BUCKET_NAME'] %>
+  - name: postgresql
+    provisioner:
+      extra_vars:
+        aws_default_region: <%= ENV['AWS_DEFAULT_REGION'] %>
+        aws_access_key_id: <%= ENV['AWS_ACCESS_KEY_ID'] %>
+        aws_secret_access_key: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>
+        backup_postgresql_bucket_name: <%= ENV['S3_BUCKET_NAME'] %>

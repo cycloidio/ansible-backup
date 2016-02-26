@@ -32,5 +32,7 @@
       backup_type: elasticsearch
       backup_es_bucket_name: "{{ backup_es_bucket_name }}"
       backup_es_bucket_region: "{{ aws_default_region }}"
+      backup_s3_expire_policy:
+        permanently_delete: 1
       tags:
         - ansible-backup
