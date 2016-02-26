@@ -196,6 +196,88 @@ Configure backup retention handled by s3 bucket lifecycle policy : http://docs.a
       backup_mongo_bucket_name: "{{ backup_mongo_bucket_name }}"
 ```
 
+Postgresql
+==========
+
+
+Requirements
+------------
+
+To upload postgresql dump on s3 bucket, this role use `aws-cli`. It's important that you configured `aws-cli` for the user who will launch the cron backup command.
+For example you can use a `.boto` file. (http://boto.cloudhackers.com/en/latest/boto_config_tut.html)
+
+The default cron command for backup use `cronlock`. For Cycloid `cronlock` is provided by the `ansible-base` role. If you don't want `cronlock`, just override the `backup_postgresql_cron` variable.
+
+Role Variables
+--------------
+
+**Required**
+
+Name of the bucket to use for the upload backup
+
+  * `backup_postgresql_bucket_name`
+
+Credentials to connect to postgresql
+
+  * `backup_postgresql_password`
+  * `backup_postgresql_host`
+  * `backup_postgresql_user`
+
+
+**Optional**
+
+Enable the validate task callback to check if the role setup succeded
+
+    validate_task: true
+
+Backup cron for postgresqldb dump
+
+    backup_postgresql_cron:
+      name: snapshot
+      job: "/usr/bin/cronlock ...
+      minute: "0"
+      hour: "3"
+      day: "*"
+      month: "*"
+      weekday: "*"
+
+
+Configure directory on the machine and s3 for the backup. Local backup is deleted after the upload in s3.
+
+    backup_postgresql_local_path: /home/backups/postgresql
+    backup_postgresql_s3_path: postgresql
+
+Configure the postgresql backup script commands :
+
+    backup_postgresql_cmd: PGPASSWORD={{ backup_postgresql_password }} pg_dump -b -h {{ backup_postgresql_host }} -U {{ backup_postgresql_user }} -Fc $DB > {{ backup_postgresql_local_path }}/$DB.bin
+
+
+Configure backup retention handled by s3 bucket lifecycle policy : http://docs.aws.amazon.com/cli/latest/reference/s3api/get-bucket-lifecycle.html
+
+    # Example one : Every file in the s3 bucket will be removed after 365 days.
+    backup_s3_expire_policy:
+      permanently_delete: 365
+      glacier_transition: 0
+
+    # Example two : Every file myprefix* will be send on glacier after 60 days. And deleted from glacier after 365 days.
+    backup_s3_expire_policy:
+      prefix: "myprefix"
+      permanently_delete: 365
+      glacier_transition: 60
+
+
+
+**Example :**
+
+```
+    - role: ansible-backup
+      validate_task: true # Run the validator
+      backup_type: postgresql
+      backup_postgresql_bucket_name: "{{ backup_postgresql_bucket_name }}"
+      backup_postgresql_password: password
+      backup_postgresql_host: 1.2.3.4
+      backup_postgresql_user: foo
+```
 
 Tests
 =====
