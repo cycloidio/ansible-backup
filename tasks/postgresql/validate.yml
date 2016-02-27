@@ -35,7 +35,7 @@
   run_once: true
 
 - name: Validate postgres user
-  command: psql -h {{ backup_postgresql_host }} -U {{ backup_postgresql_user }} postgres
+  command: psql -h {{ backup_postgresql_host }} -U {{ backup_postgresql_user }} postgres -c '\l'
   environment:
     PGPASSWORD: "{{ backup_postgresql_password }}"
   run_once: true
