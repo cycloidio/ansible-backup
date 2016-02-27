@@ -25,13 +25,25 @@ do_log "Lock mongodb"
 {% endif %}
 
 do_log "Start backup in {{ backup_mongo_local_path }}"
+BACKUP_STATUS=0
 {{ backup_mongo_cmd }}
+
+if [[ $? != 0 ]]; then
+    BACKUP_STATUS=1
+fi
  
 {% if backup_mongo_with_lock %}
 do_log "UnLock mongodb"
 #Unlock database writes
 {{ backup_mongo_unlock_cmd }}
 {% endif %}
+
+if [[ $BACKUP_STATUS != 0 ]]; then
+    do_log "ERROR backup"
+    do_log "Cleanup old backup {{ backup_mongo_local_path }}"
+    rm -rf {{ backup_mongo_local_path }}
+    exit 1
+fi
 
 TIMESTAMP=$(date +%F-%H%M)
 TAR_FILE=mongodb-$HOSTNAME-$TIMESTAMP.tar.gz
