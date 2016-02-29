@@ -26,7 +26,7 @@ do_log "Start backup in {{ backup_postgresql_local_path }}"
 # Get only line with | to filter line like : postgres=CTc/postgres
 # Filter also template0 : pg_dump: [archiver (db)] connection to database "template0" failed: FATAL:  database "template0" is not currently accepting connections
 BACKUP_STATUS=0
-{% if backup_postgresql_databases %}
+{% if backup_postgresql_databases is defined %}
 DBS="{{ backup_postgresql_databases | join(' ') }}"
 {% else %}
 DBS=$(PGPASSWORD={{ backup_postgresql_password }} psql -h {{ backup_postgresql_host }}  -U {{ backup_postgresql_user }} -lAt --field-separator="|" | awk -F '|' '/^[^\|]+\|/{print $1}' | grep -v template | grep -v rdsadmin)
@@ -51,7 +51,7 @@ if [[ $BACKUP_STATUS != 0 ]]; then
 fi
  
 TIMESTAMP=$(date +%F-%H%M)
-TAR_FILE=postgresqldb-{% if backup_postgresql_project %}{{ backup_postgresql_project }}-{% endif %}$HOSTNAME-$TIMESTAMP.tar.gz
+TAR_FILE=postgresqldb-{% if backup_postgresql_project is defined %}{{ backup_postgresql_project }}-{% endif %}$HOSTNAME-$TIMESTAMP.tar.gz
 
 # Add timestamp to backup
 tar -czf /tmp/$TAR_FILE -C {{ backup_postgresql_local_path }} .
