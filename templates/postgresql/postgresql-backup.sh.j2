@@ -26,7 +26,7 @@ do_log "Start backup in {{ backup_postgresql_local_path }}"
 # Get only line with | to filter line like : postgres=CTc/postgres
 # Filter also template0 : pg_dump: [archiver (db)] connection to database "template0" failed: FATAL:  database "template0" is not currently accepting connections
 BACKUP_STATUS=0
-DBS=$(PGPASSWORD={{ backup_postgresql_password }} psql -h {{ backup_postgresql_host }}  -U {{ backup_postgresql_user }} -lAt --field-separator="|" | awk -F '|' '/^[^\|]+\|/{print $1}' | grep -v template0)
+DBS=$(PGPASSWORD={{ backup_postgresql_password }} psql -h {{ backup_postgresql_host }}  -U {{ backup_postgresql_user }} -lAt --field-separator="|" | awk -F '|' '/^[^\|]+\|/{print $1}' | grep -v template | grep -v rdsadmin)
 
 if [[ $? != 0 ]]; then
     BACKUP_STATUS=1
