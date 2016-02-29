@@ -120,7 +120,7 @@ backup_postgresql_cron: {}
 #  hour: "3"
 #  day: "*"
 #  month: "*"
-
+backup_postgresql_script: postgresql-backup
 backup_postgresql_local_path: /home/admin/backups/postgresql
 backup_postgresql_s3_path: postgresql
 

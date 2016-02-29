@@ -19,8 +19,8 @@
 - name: "create the local backup path {{ backup_postgresql_local_path }}"
   file: path={{ backup_postgresql_local_path }} state=directory mode=0755 recurse=yes
 
-- name: "Add postgresqldb backup script /usr/bin/postgresql-backup.sh"
-  template: src="{{ ansible_template_path_legacy }}postgresql/postgresql-backup.sh.j2" dest=/usr/bin/postgresql-backup.sh owner=root group=root mode=0755
+- name: "Add postgresqldb backup script /usr/bin/{{ backup_postgresql_script }}.sh"
+  template: src="{{ ansible_template_path_legacy }}postgresql/postgresql-backup.sh.j2" dest=/usr/bin/{{ backup_postgresql_script }}.sh owner=root group=root mode=0755
 
 # Add cron comands
 - name: "cron add backup command"
