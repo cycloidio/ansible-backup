@@ -27,7 +27,7 @@ do_log "Start backup in {{ backup_postgresql_local_path }}"
 # Filter also template0 : pg_dump: [archiver (db)] connection to database "template0" failed: FATAL:  database "template0" is not currently accepting connections
 BACKUP_STATUS=0
 {% if backup_postgresql_databases %}
-DBS="{{ backup_postgresql_databases | join(' ') }}
+DBS="{{ backup_postgresql_databases | join(' ') }}"
 {% else %}
 DBS=$(PGPASSWORD={{ backup_postgresql_password }} psql -h {{ backup_postgresql_host }}  -U {{ backup_postgresql_user }} -lAt --field-separator="|" | awk -F '|' '/^[^\|]+\|/{print $1}' | grep -v template | grep -v rdsadmin)
 {% endif %}
