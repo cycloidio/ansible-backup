@@ -45,7 +45,7 @@ default_backup_es_cron:
 
 default_backup_postgresql_cron:
   name: snapshot
-  job: "/usr/bin/cronlock /usr/bin/postgresql-backup.sh 2>&1 >> /var/log/postgresql-backup.log"
+  job: "/usr/bin/cronlock /usr/bin/{{ backup_postgresql_script }}.sh 2>&1 >> /var/log/postgresql-backup.log"
   minute: "0"
   hour: "3"
   day: '*'
