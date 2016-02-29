@@ -51,7 +51,7 @@ if [[ $BACKUP_STATUS != 0 ]]; then
 fi
  
 TIMESTAMP=$(date +%F-%H%M)
-TAR_FILE=postgresqldb-$HOSTNAME-$TIMESTAMP.tar.gz
+TAR_FILE=postgresqldb-{% if backup_postgresql_project %}{{ backup_postgresql_project }}-{% endif %}$HOSTNAME-$TIMESTAMP.tar.gz
 
 # Add timestamp to backup
 tar -czf /tmp/$TAR_FILE -C {{ backup_postgresql_local_path }} .
