@@ -313,6 +313,10 @@ Database to backup if is not set the playbook will backup all databases
 
   * `backup_mysql_database`
 
+Override mysqldump options
+
+  *  backup_mysql_options: "--single-transaction --routines --events --triggers"
+
 Enable the validate task callback to check if the role setup succeded
 
     validate_task: true
@@ -336,7 +340,7 @@ Configure directory on the machine and s3 for the backup. Local backup is delete
 
 Configure the mysql backup script commands :
 
-    backup_mysql_cmd: mysqldump --host={{ backup_mysql_host }} --user {{ backup_mysql_user }} --password={{ backup_mysql_password }} {{ backup_mysql_optimize }} {{ backup_mysql_database | default('--all-databases') }} > {{ backup_mysql_local_path }}/backup.sql
+    backup_mysql_cmd: mysqldump --host={{ backup_mysql_host }} --user {{ backup_mysql_user }} --password={{ backup_mysql_password }} {{ backup_mysql_options }} {{ backup_mysql_database | default('--all-databases') }} > {{ backup_mysql_local_path }}/backup.sql
 
 
 Configure backup retention handled by s3 bucket lifecycle policy : http://docs.aws.amazon.com/cli/latest/reference/s3api/get-bucket-lifecycle.html
