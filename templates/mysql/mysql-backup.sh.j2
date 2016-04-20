@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# This file is handled by ansible
+
+S3_BUCKET_NAME={{ backup_mysql_bucket_name }}
+
+do_log()
+{
+    echo $(date +"[ %d/%m/%Y - %H:%M:%S ] #")" $@"
+}
+
+do_log "Start backup"
+
+# Secure check that dest repository is not empty.
+# We don't want to run a rm if we have done a mistake in ansible config
+if [ "x{{ backup_mysql_local_path }}" == "x" ]; then
+    do_log "Error backup_mysql_local_path is empty"
+    exit 1
+fi
+
+# Recreate the directory
+mkdir -p {{ backup_mysql_local_path }}
+
+do_log "Start backup in {{ backup_mysql_local_path }}"
+
+BACKUP_STATUS=0
+DBS=$({{ backup_mysql_cmd }})
+if [[ $? != 0 ]]; then
+    BACKUP_STATUS=1
+fi
+
+if [[ $BACKUP_STATUS != 0 ]]; then
+    do_log "ERROR backup"
+    do_log "Cleanup old backup {{ backup_mysql_local_path }}"
+    rm -rf {{ backup_mysql_local_path }}
+    exit 1
+fi
+ 
+TIMESTAMP=$(date +%F-%H%M)
+TAR_FILE=mysqldb-{% if backup_mysql_project is defined %}{{ backup_mysql_project }}-{% endif %}$HOSTNAME-$TIMESTAMP.tar.gz
+
+# Add timestamp to backup
+tar -czf /tmp/$TAR_FILE -C {{ backup_mysql_local_path }} .
+ 
+do_log "Cleanup old backup {{ backup_mysql_local_path }}"
+rm -rf {{ backup_mysql_local_path }}
+
+# Upload to S3
+do_log "Upload file on s3 s3://{{ backup_mysql_bucket_name }}/{{ backup_mysql_s3_path }}/$TAR_FILE"
+/usr/local/bin/aws s3 cp /tmp/$TAR_FILE  s3://{{ backup_mysql_bucket_name }}/{{ backup_mysql_s3_path }}/$TAR_FILE
+
+UPLOAD_STATUS=$?
+
+do_log "Remove tar file"
+rm -f /tmp/$TAR_FILE
+
+if [[ $UPLOAD_STATUS != 0 ]];then
+    do_log "ERROR Upload tar /tmp/$TAR_FILE on s3 fail"
+    exit 1
+fi
+
