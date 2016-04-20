@@ -55,3 +55,17 @@ default_backup_postgresql_cron:
   user: 'root'
   state: present
 #_backup_postgresql_cron: "{{ default_backup_postgresql_cron|combine(backup_postgresql_cron) }}"
+
+
+default_backup_mysql_cron:
+  name: snapshot
+  job: "/usr/bin/cronlock /usr/bin/{{ backup_mysql_script }}.sh 2>&1 >> /var/log/mysql-backup.log"
+  minute: "0"
+  hour: "3"
+  day: '*'
+  month: '*'
+  weekday: '*'
+  cron_file: "mysql_backup"
+  user: 'root'
+  state: present
+#_backup_mysql_cron: "{{ default_backup_mysql_cron|combine(backup_mysql_cron) }}"

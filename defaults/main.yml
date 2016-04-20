@@ -138,3 +138,43 @@ backup_postgresql_cmd: PGPASSWORD={{ backup_postgresql_password }} pg_dump -b -h
 #  * Case sensitive. e.g. Myfolder/ or MyFolder/MyObject
 #  * Rule will apply to all the objects that start with the specified prefix
 #  * Don’t include the bucket name in the prefix
+
+# === MYSQL ===
+
+### Required
+# Name of the bucket to use for backups on s3
+# backup_mysql_bucket_name
+
+# Credentials to connect to mysql
+# backup_mysql_password
+# backup_mysql_host
+# backup_mysql_user
+# backup_mysql_database
+
+### Optional
+
+backup_mysql_cron: {}
+#  name: snapshot
+#  job: "/usr/bin/cronlock /usr/bin/mysql-backup.sh 2>&1 >> /var/log/mysql-backup.log"
+#  minute: "0"
+#  hour: "3"
+#  day: "*"
+#  month: "*"
+backup_mysql_script: mysql-backup
+backup_mysql_local_path: /home/admin/backups/mysql
+backup_mysql_s3_path: mysql
+
+# You can add --jobs=njobs if you want to improve the dump time
+backup_mysql_options: "--single-transaction --routines --events --triggers"
+backup_mysql_cmd: mysqldump --host={{ backup_mysql_host }} --user {{ backup_mysql_user }} --password={{ backup_mysql_password }} {{ backup_mysql_options }} {{ backup_mysql_database | default('--all-databases') }} > {{ backup_mysql_local_path }}/backup.sql
+
+# Number of days to set on backup expire lifecycle policy for s3.
+# backup_s3_expire_policy:
+#  prefix: ""
+#  permanently_delete: 0
+#  glacier_transition: 0
+#  name: "Backup {{ backup_type }} lifecycle policy"
+# Prefix :
+#  * Case sensitive. e.g. Myfolder/ or MyFolder/MyObject
+#  * Rule will apply to all the objects that start with the specified prefix
+#  * Don’t include the bucket name in the prefix

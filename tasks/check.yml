@@ -2,4 +2,4 @@
 
 - name: Check - backup_type is provided.
   fail: msg='backup_type should be provided'
-  when: backup_type is not defined or backup_type not in ['elasticsearch', 'mongodb', 'postgresql']
+  when: backup_type is not defined or backup_type not in ['elasticsearch', 'mongodb', 'postgresql', 'mysql']

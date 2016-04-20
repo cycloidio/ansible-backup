@@ -279,6 +279,98 @@ Configure backup retention handled by s3 bucket lifecycle policy : http://docs.a
       backup_postgresql_user: foo
 ```
 
+Mysql
+==========
+
+
+Requirements
+------------
+
+To upload mysql dump on s3 bucket, this role use `aws-cli`. It's important that you configured `aws-cli` for the user who will launch the cron backup command.
+For example you can use a `.boto` file. (http://boto.cloudhackers.com/en/latest/boto_config_tut.html)
+
+The default cron command for backup use `cronlock`. For Cycloid `cronlock` is provided by the `ansible-base` role. If you don't want `cronlock`, just override the `backup_postgresql_cron` variable.
+
+Role Variables
+--------------
+
+**Required**
+
+Name of the bucket to use for the upload backup
+
+  * `backup_mysql_bucket_name`
+
+Credentials to connect to postgresql
+
+  * `backup_mysql_password`
+  * `backup_mysql_host`
+  * `backup_mysql_user`
+
+
+**Optional**
+
+Database to backup if is not set the playbook will backup all databases
+
+  * `backup_mysql_database`
+
+Override mysqldump options
+
+  *  backup_mysql_options: "--single-transaction --routines --events --triggers"
+
+Enable the validate task callback to check if the role setup succeded
+
+    validate_task: true
+
+Backup cron for mysql db dump
+
+    backup_mysql_cron:
+      name: snapshot
+      job: "/usr/bin/cronlock ...
+      minute: "0"
+      hour: "3"
+      day: "*"
+      month: "*"
+      weekday: "*"
+
+
+Configure directory on the machine and s3 for the backup. Local backup is deleted after the upload in s3.
+
+    backup_mysql_local_path: /home/admin/backups/mysql
+    backup_mysql_s3_path: mysql
+
+Configure the mysql backup script commands :
+
+    backup_mysql_cmd: mysqldump --host={{ backup_mysql_host }} --user {{ backup_mysql_user }} --password={{ backup_mysql_password }} {{ backup_mysql_options }} {{ backup_mysql_database | default('--all-databases') }} > {{ backup_mysql_local_path }}/backup.sql
+
+
+Configure backup retention handled by s3 bucket lifecycle policy : http://docs.aws.amazon.com/cli/latest/reference/s3api/get-bucket-lifecycle.html
+
+    # Example one : Every file in the s3 bucket will be removed after 365 days.
+    backup_s3_expire_policy:
+      permanently_delete: 365
+      glacier_transition: 0
+
+    # Example two : Every file myprefix* will be send on glacier after 60 days. And deleted from glacier after 365 days.
+    backup_s3_expire_policy:
+      prefix: "myprefix"
+      permanently_delete: 365
+      glacier_transition: 60
+
+
+
+**Example :**
+
+```
+    - role: ansible-backup
+      validate_task: true # Run the validator
+      backup_type: mysql
+      backup_mysql_bucket_name: "{{ backup_mysql_bucket_name }}"
+      backup_mysql_password: password
+      backup_mysql_host: 1.2.3.4
+      backup_mysql_user: foo
+```
+
+
 Tests
 =====
 

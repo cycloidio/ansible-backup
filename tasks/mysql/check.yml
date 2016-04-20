@@ -1,0 +1,26 @@
+---
+
+# Check args
+- name: "Check - backup_mysql_password are provided"
+  fail: msg='backup_mysql_password should be provided for mysql backup'
+  when: backup_mysql_password is not defined
+
+- name: "Check - backup_mysql_host are provided"
+  fail: msg='backup_mysql_host should be provided for mysql backup'
+  when: backup_mysql_host is not defined
+
+- name: "Check - backup_mysql_user are provided"
+  fail: msg='backup_mysql_user should be provided for mysql backup'
+  when: backup_mysql_user is not defined
+
+- name: "Check - backup_mysql_bucket_name are provided"
+  fail: msg='backup_mysql_bucket_name should be provided for mysql backup'
+  when: backup_mysql_bucket_name is not defined
+
+- name: "Check - aws-cli is installed"
+  command: which aws
+  ignore_errors: yes
+  register: _check_aws_cli
+
+- name: "Set cron user for the playbook"
+  set_fact: backup_mysql_cron_user="{{ backup_mysql_cron.user|default('root') }}"
