@@ -24,7 +24,7 @@ mkdir -p {{ backup_mysql_local_path }}
 do_log "Start backup in {{ backup_mysql_local_path }}"
 
 BACKUP_STATUS=0
-DBS=$({{ backup_mysql_cmd }})
+{{ backup_mysql_cmd }}
 if [[ $? != 0 ]]; then
     BACKUP_STATUS=1
 fi
