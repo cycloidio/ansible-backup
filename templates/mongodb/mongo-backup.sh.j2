@@ -29,6 +29,7 @@ BACKUP_STATUS=0
 {{ backup_mongo_cmd }}
 
 if [[ $? != 0 ]]; then
+    do_log "Dumping of mongo database failed"
     BACKUP_STATUS=1
 fi
  
