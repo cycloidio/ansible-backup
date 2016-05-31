@@ -2,5 +2,5 @@
 
 # This file is handled by ansible
 
-curl --fail -XPUT "http://{{ backup_es_host }}:{{ backup_es_port }}/_snapshot/{{ backup_es_repository_name }}" -d '{{ _es_create_repository_body | to_nice_json }}'
+curl --silent --show-error --fail -XPUT "http://{{ backup_es_host }}:{{ backup_es_port }}/_snapshot/{{ backup_es_repository_name }}" -d '{{ _es_create_repository_body | to_nice_json }}'
 exit $?
