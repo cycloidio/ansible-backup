@@ -18,6 +18,7 @@
 # Ensure dateutil is installed for s3_lifecycle
 - pip: name=python-dateutil state=present
   run_once: true
+  delegate_to: 127.0.0.1
 
 - pip: name=awscli state=latest
   when: _check_aws_cli|failed
