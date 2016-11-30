@@ -13,7 +13,7 @@ default_backup_s3_expire_policy:
   permanently_delete: 0
   glacier_transition: 0
   name: "Backup {{ backup_type }} lifecycle policy"
-#_backup_s3_expire_policy: "{{ default_backup_s3_expire_policy |combine(backup_s3_expire_policy|default({})) }}"
+_backup_s3_expire_policy: "{{ default_backup_s3_expire_policy |combine(backup_s3_expire_policy|default({})) }}"
 
 
 default_backup_mongo_cron:
@@ -69,3 +69,4 @@ default_backup_mysql_cron:
   user: 'root'
   state: present
 #_backup_mysql_cron: "{{ default_backup_mysql_cron|combine(backup_mysql_cron) }}"
+

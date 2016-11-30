@@ -6,6 +6,7 @@
 - name: "Get HOME directory for user {{ backup_postgresql_cron_user }}"
   shell: 'getent passwd {{ backup_postgresql_cron_user }} | cut -d: -f6'
   register: user_home
+  always_run: true
 
 - name: Validate create tmpfile to test s3 push.
   file: path=/tmp/ansible-backup-postgresql.test state=touch
