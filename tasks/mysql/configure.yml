@@ -46,6 +46,6 @@
     state="{{ item.state | default(default_backup_mysql_cron.state) }}"
   with_items:
     - "{{ backup_mysql_cron }}"
-  sudo: yes 
+  become: yes 
 
 
