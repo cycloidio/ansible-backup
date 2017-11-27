@@ -3,15 +3,15 @@
 # Check args
 - name: "Check - backup_mysql_password are provided"
   fail: msg='backup_mysql_password should be provided for mysql backup'
-  when: backup_mysql_password is not defined
+  when: not restore_only and backup_mysql_password is not defined
 
 - name: "Check - backup_mysql_host are provided"
   fail: msg='backup_mysql_host should be provided for mysql backup'
-  when: backup_mysql_host is not defined
+  when: not restore_only and backup_mysql_host is not defined
 
 - name: "Check - backup_mysql_user are provided"
   fail: msg='backup_mysql_user should be provided for mysql backup'
-  when: backup_mysql_user is not defined
+  when: not restore_only and backup_mysql_user is not defined
 
 - name: "Check - backup_mysql_bucket_name are provided"
   fail: msg='backup_mysql_bucket_name should be provided for mysql backup'

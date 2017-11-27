@@ -5,6 +5,10 @@
 # Args : (elasticsearch|mongodb)
 # backup_type: 
 
+# If restore_only = true, then only the restore script is created, no backup is actually done
+# (useful to synchronize prod to preprod, for instance)
+restore_only: false
+
 backup_s3_expire_policy: {}
 
 # === ES ===
@@ -168,6 +172,8 @@ backup_mysql_s3_path: mysql
 backup_mysql_options: "--single-transaction --routines --events --triggers"
 backup_mysql_cmd: mysqldump --host={{ backup_mysql_host }} --user {{ backup_mysql_user }} --password={{ backup_mysql_password }} {{ backup_mysql_options }} {{ backup_mysql_database | default('--all-databases') }} > {{ backup_mysql_local_path }}/backup.sql
 
+restore_mysql_script: mysql-restore
+
 # Number of days to set on backup expire lifecycle policy for s3.
 # backup_s3_expire_policy:
 #  prefix: ""
@@ -178,3 +184,4 @@ backup_mysql_cmd: mysqldump --host={{ backup_mysql_host }} --user {{ backup_mysq
 #  * Case sensitive. e.g. Myfolder/ or MyFolder/MyObject
 #  * Rule will apply to all the objects that start with the specified prefix
 #  * Don’t include the bucket name in the prefix
+

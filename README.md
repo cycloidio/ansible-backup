@@ -1,11 +1,13 @@
 ansible-backup
 ==============
 
-This role install and configure backups for several applications like elasticsearch and mongodb.
+This role installs and configures backups for several applications like elasticsearch and mongodb.
 
 No global requirements. It will depend of what type of backup you want. See specific Requirements section for each backup type.
 
 The only things you need is to specify `backup_type` variable to define what kind of backup you want to setup.
+
+This role also installs restore procedures, in order to be able to restore a previous backup (possibly from another environment, allowing syncing prod to preprod). To only install the restore part, use `restore_only: true`.
 
 elasticsearch
 =============
@@ -279,9 +281,8 @@ Configure backup retention handled by s3 bucket lifecycle policy : http://docs.a
       backup_postgresql_user: foo
 ```
 
-Mysql
-==========
-
+MySQL
+=====
 
 Requirements
 ------------
@@ -356,8 +357,6 @@ Configure backup retention handled by s3 bucket lifecycle policy : http://docs.a
       permanently_delete: 365
       glacier_transition: 60
 
-
-
 **Example :**
 
 ```
@@ -370,6 +369,38 @@ Configure backup retention handled by s3 bucket lifecycle policy : http://docs.a
       backup_mysql_user: foo
 ```
 
+Restore/sync playbooks
+======================
+
+To make it easier to restore or sync databases, you may create independant playbooks to be executed on the Bastion...
+
+Example for a "mysql restore" playbook:
+
+```
+- hosts: tag_role_front:&tag_project_website:&tag_env_{{ env }}
+  become: yes
+
+  tasks:
+    - name: Restore MySQL database
+      shell: /usr/bin/mysql-restore.sh
+      tags:
+        - mysql_restore
+      run_once: true
+```
+
+Example for a "mysql sync from prod" playbook:
+
+```
+- hosts: tag_role_front:&tag_project_website:&tag_env_{{ env }}
+  become: yes
+
+  tasks:
+    - name: Restore MySQL database
+      shell: /usr/bin/mysql-restore.sh -e prod
+      tags:
+        - mysql_restore
+      run_once: true
+```
 
 Tests
 =====
