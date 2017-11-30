@@ -1,0 +1,46 @@
+---
+
+- name: "Apply s3 backup lifecycle policy on the s3 bucket {{ backup_mongo_bucket_name }}"
+  s3_lifecycle:
+    rule_id: "{{ _backup_s3_expire_policy.name }}"
+    name: "{{ backup_mongo_bucket_name }}"
+    transition_days: "{{ _backup_s3_expire_policy.glacier_transition }}"
+    expiration_days: "{{ _backup_s3_expire_policy.permanently_delete }}"
+    prefix: "{{ _backup_s3_expire_policy.prefix }}"
+    status: enabled
+    state: present
+  run_once: true
+  delegate_to: 127.0.0.1
+  when: _backup_s3_expire_policy.glacier_transition > 0
+
+- name: "Apply s3 backup lifecycle policy on the s3 bucket {{ backup_mongo_bucket_name }}"
+  s3_lifecycle:
+    rule_id: "{{ _backup_s3_expire_policy.name }}"
+    name: "{{ backup_mongo_bucket_name }}"
+    expiration_days: "{{ _backup_s3_expire_policy.permanently_delete }}"
+    prefix: "{{ _backup_s3_expire_policy.prefix }}"
+    status: enabled
+    state: present
+  run_once: true
+  delegate_to: 127.0.0.1
+  when: _backup_s3_expire_policy.glacier_transition == 0 and _backup_s3_expire_policy.permanently_delete > 0
+
+- name: "Add mongodb backup script /usr/bin/mongo-backup.sh"
+  template: src="{{ ansible_template_path_legacy }}mongodb/mongo-backup.sh.j2" dest=/usr/bin/mongo-backup.sh owner=root group=root mode=0755
+
+# Add cron comands
+- name: "cron add backup command"
+  cron: >
+    name="{{ item.name | default(default_backup_mongo_cron.name) }}"
+    job="{{ item.job | default(default_backup_mongo_cron.job) }}"
+    minute="{{ item.minute | default(default_backup_mongo_cron.minute) }}"
+    hour="{{ item.hour | default(default_backup_mongo_cron.hour) }}"
+    day="{{ item.day | default(default_backup_mongo_cron.day) }}"
+    month="{{ item.month | default(default_backup_mongo_cron.month) }}"
+    weekday="{{ item.weekday | default(default_backup_mongo_cron.weekday) }}"
+    cron_file="{{ item.file | default(default_backup_mongo_cron.cron_file) }}"
+    user="{{ backup_mongo_cron_user }}"
+    state="{{ item.state | default(default_backup_mongo_cron.state) }}"
+  with_items:
+    - "{{ backup_mongo_cron }}"
+  become: yes 

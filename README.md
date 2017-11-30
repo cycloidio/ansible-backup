@@ -395,10 +395,24 @@ Example for a "mysql sync from prod" playbook:
   become: yes
 
   tasks:
-    - name: Restore MySQL database
+    - name: Sync MySQL database from prod
       shell: /usr/bin/mysql-restore.sh -e prod
       tags:
         - mysql_restore
+      run_once: true
+```
+
+Example for a "mongodb sync from prod" playbook:
+
+```
+- hosts: tag_role_mongodb:&tag_project_website:&tag_env_{{ env }}
+  become: yes
+
+  tasks:
+    - name: Sync MongoDB database from prod
+      shell: /usr/bin/mysql-restore.sh -f my_db_prod -t my_db_{{ env }} -e prod
+      tags:
+        - mongo_restore
       run_once: true
 ```
 

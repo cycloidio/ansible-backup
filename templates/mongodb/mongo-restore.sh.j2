@@ -1,0 +1,51 @@
+#!/bin/bash
+
+ENV="{{ env }}"
+
+while getopts f:t: var
+do
+  case $var in
+    f) FROM_DB="$OPTARG" ;;
+    t) TO_DB="$OPTARG" ;;
+    e) ENV="$OPTARG" ;;
+  esac
+done
+
+do_log()
+{
+    echo $(date +"[ %d/%m/%Y - %H:%M:%S ] #")" $@"
+}
+
+if [ -z "$FROM_DB" ]
+then
+  do_log "No database specified, aborting"
+  exit 1
+fi
+
+if [ -z "$TO_DB" ]
+then
+  TO_DB="$FROM_DB"
+fi
+
+do_log "Restoring database '$FROM_DB' from environment $ENV to '$TO_DB'..."
+
+if [ "$(mongo localhost:27017 --quiet --eval 'db.isMaster().secondary')" != "false" ]
+then
+    do_log "Restore script has been launched on a MongoDB secondary server, aborting. Please launch on the primary."
+    exit 1
+fi
+
+do_log "Retrieve the backup archive in {{ backup_mongo_local_path }}""
+S3_FILENAME=$(/usr/local/bin/aws s3 ls s3://{{ backup_mongo_bucket_name }}/{{ PROJECT }}/mongodb/{{ ENV }}/ | sort | tail -n1 | awk '{print $4}')
+/usr/local/bin/aws s3 cp --quiet s3://{{ backup_mongo_bucket_name }}/{{ PROJECT }}/mongodb/{{ ENV }}/$S3_FILENAME {{ backup_mongo_local_path }}/mongodb-{{ ENV }}-backup.tar.gz
+tar -zxvf -C {{ backup_mongo_local_path }} {{ backup_mongo_local_path }}/mongodb-{{ ENV }}-backup.tar.gz
+
+do_log "Lock mongodb before restore"
+{{ backup_mongo_lock_cmd }}
+do_log "Start restore"
+/usr/bin/mongorestore --drop --db $TO_DB {{ backup_mongo_local_path }}/{{ FROM_DB }}/
+do_log "Unlock mongodb"
+{{ backup_mongo_unlock_cmd }}
+
+do_log "Remove untarred archive"
+rm -fr {{ backup_mongo_local_path }}/*

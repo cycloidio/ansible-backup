@@ -84,6 +84,7 @@ backup_mongo_cron: {}
 #  month: "*"
 
 # Do a lock during the mongo dump (https://docs.mongodb.org/manual/reference/method/db.fsyncLock/)
+# (lock is always done during a restore)
 backup_mongo_with_lock: false
 
 backup_mongo_lock_cmd: /usr/bin/mongo admin --eval "printjson(db.fsyncLock())"
@@ -91,6 +92,7 @@ backup_mongo_unlock_cmd: /usr/bin/mongo admin --eval "printjson(db.fsyncUnlock()
 backup_mongo_local_path: /home/admin/backups/mongodb
 backup_mongo_cmd: /usr/bin/mongodump --oplog --out {{ backup_mongo_local_path }} --quiet
 backup_mongo_s3_path: mongo
+
 
 # Number of days to set on backup expire lifecycle policy for s3.
 # backup_s3_expire_policy:

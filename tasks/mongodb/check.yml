@@ -2,7 +2,7 @@
 
 # Check args
 - name: "Check - backup_mongo_bucket_name are provided"
-  fail: msg='backup_mongo_bucket_name should be provided for es backup'
+  fail: msg='backup_mongo_bucket_name should be provided for backup'
   when: backup_mongo_bucket_name is not defined
 
 - name: "Check - aws-cli is installed"
