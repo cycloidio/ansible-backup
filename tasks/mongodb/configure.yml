@@ -8,3 +8,6 @@
 
 - name: "Add mongodb restore script /usr/bin/mongo-restore.sh"
   template: src="{{ ansible_template_path_legacy }}mongodb/mongo-restore.sh.j2" dest=/usr/bin/mongo-restore.sh owner=root group=root mode=0755
+
+- name: "Add mongodb backups list script /usr/bin/mongo-list-backups.sh"
+  template: src="{{ ansible_template_path_legacy }}mongodb/mongo-list-backups.sh.j2" dest=/usr/bin/mongo-list-backups.sh owner=root group=root mode=0755

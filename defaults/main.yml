@@ -175,6 +175,7 @@ backup_mysql_options: "--single-transaction --routines --events --triggers"
 backup_mysql_cmd: mysqldump --host={{ backup_mysql_host }} --user {{ backup_mysql_user }} --password={{ backup_mysql_password }} {{ backup_mysql_options }} {{ backup_mysql_database | default('--all-databases') }} > {{ backup_mysql_local_path }}/backup.sql
 
 restore_mysql_script: mysql-restore
+list_mysql_script: mysql-list-backups
 
 # Number of days to set on backup expire lifecycle policy for s3.
 # backup_s3_expire_policy:

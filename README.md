@@ -416,6 +416,48 @@ Example for a "mongodb sync from prod" playbook:
       run_once: true
 ```
 
+Playbooks to list archives
+==========================
+
+The `*-list-backups.sh` scripts, deployed on the servers, allow listing the
+available backup archives.
+
+To be able to get the archives list on the bastion, you may create a playbook
+this way:
+
+```
+---
+- hosts: tag_role_front:&tag_project_website:&tag_env_{{ env }}
+  become: yes
+
+  tasks:
+    - shell:/usr/bin/mysql-list-backups.sh
+      register: list
+    - debug: msg={{ list.stdout_lines }}         
+```
+
+or, for MongoDB:
+
+```
+---
+- hosts: tag_role_mongo:&tag_project_website:&tag_env_{{ env }}
+  become: yes
+
+  tasks:
+    - shell:/usr/bin/mongo-list-backups.sh
+      register: list
+    - debug: msg={{ list.stdout_lines }}         
+```
+
+You can use the `-e` argument when calling the shellscript, in order to list
+backups from another environment. However, listing prod archives from a preprod
+server gives exactly the same output than listing prod achives from a prod
+server: there is no real use in changing the environment when called from a
+playbook, where you can set the environment at a higher level.
+
+Be careful: the list includes archives stored in Glacier; older ones may need
+to be put out of Glacier before you are able to restore from them.
+
 Tests
 =====
 

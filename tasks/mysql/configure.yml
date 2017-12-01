@@ -6,3 +6,6 @@
 
 - name: "Add MySQL db restore script /usr/bin/{{ restore_mysql_script }}.sh"
   template: src="{{ ansible_template_path_legacy }}mysql/mysql-restore.sh.j2" dest=/usr/bin/{{ restore_mysql_script }}.sh owner=root group=root mode=0755
+
+- name: "Add MySQL db backup list script /usr/bin/{{ list_mysql_script }}.sh"
+  template: src="{{ ansible_template_path_legacy }}mysql/mysql-list-backups.sh.j2" dest=/usr/bin/{{ list_mysql_script }}.sh owner=root group=root mode=0755
