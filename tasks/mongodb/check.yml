@@ -5,6 +5,10 @@
   fail: msg='backup_mongo_bucket_name should be provided for backup'
   when: backup_mongo_bucket_name is not defined
 
+- name: "Check - backup_mongo_project is provided"
+  fail: msg='backup_mongo_project must be provided for mongo backup'
+  when: backup_mongo_project is not defined
+
 - name: "Check - aws-cli is installed"
   command: which aws
   ignore_errors: yes

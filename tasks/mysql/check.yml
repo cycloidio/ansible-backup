@@ -17,6 +17,10 @@
   fail: msg='backup_mysql_bucket_name should be provided for mysql backup'
   when: backup_mysql_bucket_name is not defined
 
+- name: "Check - backup_mysql_project is provided"
+  fail: msg='backup_mysql_project must be provided for mysql backup'
+  when: backup_mysql_project is not defined
+
 - name: "Check - aws-cli is installed"
   command: which aws
   ignore_errors: yes
