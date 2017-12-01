@@ -372,7 +372,16 @@ Configure backup retention handled by s3 bucket lifecycle policy : http://docs.a
 Restore/sync playbooks
 ======================
 
-To make it easier to restore or sync databases, you may create independant playbooks to be executed on the Bastion...
+To make it easier to restore or sync databases, you may create independant
+playbooks to be executed on the Bastion, in order to run the restore script.
+This script may take different arguments, depending on the database type
+and on the needs.
+Common arguments are:
+* `-e` to restore from another environment
+* `-f` to define a filter (in order to restore an older archive)
+
+The filter is simply a "grep" on the archives list, the script then takes the
+most recent archive matching the filter.
 
 Example for a "mysql restore" playbook:
 
@@ -410,10 +419,31 @@ Example for a "mongodb sync from prod" playbook:
 
   tasks:
     - name: Sync MongoDB database from prod
-      shell: /usr/bin/mysql-restore.sh -f my_db_prod -t my_db_{{ env }} -e prod
+      shell: /usr/bin/mysql-restore.sh -d my_db_prod -t my_db_{{ env }} -e prod
       tags:
         - mongo_restore
       run_once: true
+```
+
+Example for a "mysql restore" playbook which takes a filter as an argument:
+
+```
+- hosts: tag_role_front:&tag_project_website:&tag_env_{{ env }}
+  become: yes
+
+  tasks:
+    - name: Restore MySQL database with filter {{ filter }}
+      shell: /usr/bin/mysql-restore.sh -f {{ filter }}
+      tags:
+        - mysql_restore
+      run_once: true
+```
+
+This last playbook can be run with the following command, to restore the backup
+archive from 25/11/2017:
+
+```
+ansible-playbook mysql-restore.yml -e "env=prod filter=2017-11-25"
 ```
 
 Playbooks to list archives

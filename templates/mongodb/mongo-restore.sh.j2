@@ -2,13 +2,15 @@
 
 PROJECT="{{ backup_mongo_project }}"
 ENV="{{ env }}"
+FILTER=".*"
 
 while getopts f:t: var
 do
   case $var in
-    f) FROM_DB="$OPTARG" ;;
+    d) FROM_DB="$OPTARG" ;;
     t) TO_DB="$OPTARG" ;;
     e) ENV="$OPTARG" ;;
+    f) FILTER="$OPTARG" ;;
   esac
 done
 
@@ -36,8 +38,8 @@ then
     exit 1
 fi
 
-do_log "Retrieve the backup archive in {{ backup_mongo_local_path }}""
-S3_FILENAME=$(/usr/local/bin/aws s3 ls s3://{{ backup_mongo_bucket_name }}/{{ PROJECT }}/mongodb/{{ ENV }}/ | sort | tail -n1 | awk '{print $4}')
+do_log "Retrieve the backup archive in {{ backup_mongo_local_path }}"
+S3_FILENAME="$(/usr/local/bin/aws s3 ls s3://{{ backup_mongo_bucket_name }}/{{ PROJECT }}/mongodb/{{ ENV }}/ | grep "$FILTER" | sort | tail -n1 | awk '{print $4}')"
 /usr/local/bin/aws s3 cp --quiet s3://{{ backup_mongo_bucket_name }}/{{ PROJECT }}/mongodb/{{ ENV }}/$S3_FILENAME {{ backup_mongo_local_path }}/mongodb-{{ ENV }}-backup.tar.gz
 tar -zxvf -C {{ backup_mongo_local_path }} {{ backup_mongo_local_path }}/mongodb-{{ ENV }}-backup.tar.gz
 
