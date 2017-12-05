@@ -1,4 +1,15 @@
 #!/bin/bash
+#
+# Mandatory argument:
+#
+# -d <database>: name of the database to restore (source db, in the archive)
+#
+# Optional arguments:
+#
+# -t <database>: the target database (if different from the source)
+# -e <env>: restore from another environment
+# -f <filter>: restore a specific archive
+
 
 PROJECT="{{ backup_mongo_project }}"
 ENV="{{ env }}"

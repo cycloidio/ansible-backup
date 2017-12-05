@@ -419,7 +419,7 @@ Example for a "mongodb sync from prod" playbook:
 
   tasks:
     - name: Sync MongoDB database from prod
-      shell: /usr/bin/mysql-restore.sh -d my_db_prod -t my_db_{{ env }} -e prod
+      shell: /usr/bin/mongo-restore.sh -d my_db_prod -t my_db_{{ env }} -e prod
       tags:
         - mongo_restore
       run_once: true
