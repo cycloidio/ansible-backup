@@ -1,0 +1,46 @@
+#!/bin/bash
+#
+# Optional arguments:
+#
+# -e <env>: restore from another environment
+# -d <database>: restore to another database name
+# -f <filter>: restore a specific archive
+
+DIR="{{ backup_mysql_local_path }}/restore"
+BUCKET="{{ backup_mysql_bucket_name }}"
+PROJECT="{{ backup_mysql_project }}"
+ENV="{{ env }}"
+DATABASE="{{ backup_mysql_database }}"
+LOG="/var/log/restore_mysql.log"
+FILTER=".*"
+
+while getopts d:e: var
+do
+  case $var in
+    d) DATABASE="$OPTARG" ;;
+    e) ENV="$OPTARG" ;;
+    f) FILTER="$OPTARG" ;;
+  esac
+done
+
+log () {
+    echo "$(date +%Y-%m-%d-%H%M%S) - $@" | tee -a ${LOG}
+}
+
+mkdir -p ${DIR}
+
+log "Start get s3 dump"
+ARCHIVE=$(aws s3 ls s3://${BUCKET}/${PROJECT}/mysql/${ENV}/ | grep "$FILTER" | sort | tail -n1 | awk '{print $4}')
+aws s3 cp s3://${BUCKET}/${PROJECT}/mysql/${ENV}/${ARCHIVE} ${DIR}/ 2>&1 | tee -a ${LOG}
+log "End get s3 dump"
+
+log "Restore ${ARCHIVE}"
+# Remove the old db
+mysql -h{{ mysql_host }} -u{{ mysql_root_user }} -p{{ mysql_root_password }} -e "DROP DATABASE ${DATABASE}" 2>&1 | tee -a ${LOG}
+mysql -h{{ mysql_host }} -u{{ mysql_root_user }} -p{{ mysql_root_password }} -e "CREATE DATABASE ${DATABASE}" 2>&1 | tee -a ${LOG}
+tar xzOf ${DIR}/${ARCHIVE} | mysql -h{{ mysql_host }} -u{{ mysql_root_user }} -p{{ mysql_root_password }} ${DATABASE} 2>&1 | tee -a ${LOG}
+log "End restore"
+
+log "Clean ${DIR}/"
+rm ${DIR} -rf | tee -a ${LOG}
+log "End clean"

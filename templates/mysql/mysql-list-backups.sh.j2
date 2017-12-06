@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+# Optional argument:
+#
+# -e <env>: list from another environment
+
+BUCKET="{{ backup_mysql_bucket_name }}"
+PROJECT="{{ backup_mysql_project }}"
+ENV="{{ env }}"
+
+while getopts d:e: var
+do
+  case $var in
+    e) ENV="$OPTARG" ;;
+  esac
+done
+
+aws s3 ls s3://${BUCKET}/${PROJECT}/mysql/${ENV}/ | sed 's/.*-\([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]\)\.tar\.gz/\1/' | sort

@@ -1,11 +1,13 @@
 ansible-backup
 ==============
 
-This role install and configure backups for several applications like elasticsearch and mongodb.
+This role installs and configures backups for several applications like elasticsearch and mongodb.
 
 No global requirements. It will depend of what type of backup you want. See specific Requirements section for each backup type.
 
 The only things you need is to specify `backup_type` variable to define what kind of backup you want to setup.
+
+This role also installs restore procedures, in order to be able to restore a previous backup (possibly from another environment, allowing syncing prod to preprod). To only install the restore part, use `restore_only: true`.
 
 elasticsearch
 =============
@@ -279,9 +281,8 @@ Configure backup retention handled by s3 bucket lifecycle policy : http://docs.a
       backup_postgresql_user: foo
 ```
 
-Mysql
-==========
-
+MySQL
+=====
 
 Requirements
 ------------
@@ -356,8 +357,6 @@ Configure backup retention handled by s3 bucket lifecycle policy : http://docs.a
       permanently_delete: 365
       glacier_transition: 60
 
-
-
 **Example :**
 
 ```
@@ -370,6 +369,124 @@ Configure backup retention handled by s3 bucket lifecycle policy : http://docs.a
       backup_mysql_user: foo
 ```
 
+Restore/sync playbooks
+======================
+
+To make it easier to restore or sync databases, you may create independant
+playbooks to be executed on the Bastion, in order to run the restore script.
+This script may take different arguments, depending on the database type
+and on the needs.
+Common arguments are:
+* `-e` to restore from another environment
+* `-f` to define a filter (in order to restore an older archive)
+
+The filter is simply a "grep" on the archives list, the script then takes the
+most recent archive matching the filter.
+
+Example for a "mysql restore" playbook:
+
+```
+- hosts: tag_role_front:&tag_project_website:&tag_env_{{ env }}
+  become: yes
+
+  tasks:
+    - name: Restore MySQL database
+      shell: /usr/bin/mysql-restore.sh
+      tags:
+        - mysql_restore
+      run_once: true
+```
+
+Example for a "mysql sync from prod" playbook:
+
+```
+- hosts: tag_role_front:&tag_project_website:&tag_env_{{ env }}
+  become: yes
+
+  tasks:
+    - name: Sync MySQL database from prod
+      shell: /usr/bin/mysql-restore.sh -e prod
+      tags:
+        - mysql_restore
+      run_once: true
+```
+
+Example for a "mongodb sync from prod" playbook:
+
+```
+- hosts: tag_role_mongodb:&tag_project_website:&tag_env_{{ env }}
+  become: yes
+
+  tasks:
+    - name: Sync MongoDB database from prod
+      shell: /usr/bin/mongo-restore.sh -d my_db_prod -t my_db_{{ env }} -e prod
+      tags:
+        - mongo_restore
+      run_once: true
+```
+
+Example for a "mysql restore" playbook which takes a filter as an argument:
+
+```
+- hosts: tag_role_front:&tag_project_website:&tag_env_{{ env }}
+  become: yes
+
+  tasks:
+    - name: Restore MySQL database with filter {{ filter }}
+      shell: /usr/bin/mysql-restore.sh -f {{ filter }}
+      tags:
+        - mysql_restore
+      run_once: true
+```
+
+This last playbook can be run with the following command, to restore the backup
+archive from 25/11/2017:
+
+```
+ansible-playbook mysql-restore.yml -e "env=prod filter=2017-11-25"
+```
+
+Playbooks to list archives
+==========================
+
+The `*-list-backups.sh` scripts, deployed on the servers, allow listing the
+available backup archives.
+
+To be able to get the archives list on the bastion, you may create a playbook
+this way:
+
+```
+---
+- hosts: tag_role_front:&tag_project_website:&tag_env_{{ env }}
+  become: yes
+
+  tasks:
+    - shell:/usr/bin/mysql-list-backups.sh
+      register: list
+    - debug: msg={{ list.stdout_lines }}         
+```
+
+or, for MongoDB:
+
+```
+---
+- hosts: tag_role_mongo:&tag_project_website:&tag_env_{{ env }}
+  become: yes
+
+  tasks:
+    - shell:/usr/bin/mongo-list-backups.sh
+      register: list
+    - debug: msg={{ list.stdout_lines }}         
+```
+
+You can use the `-e` argument when calling the shellscript, in order to list
+backups from another environment. However, listing prod archives from a preprod
+server gives exactly the same output than listing prod achives from a prod
+server: there is no real use in changing the environment when called from a
+playbook, where you can set the environment at a higher level.
+
+Be careful: the list includes archives stored in Glacier; older ones may need
+to be put out of Glacier before you are able to restore from them.
 
 Tests
 =====

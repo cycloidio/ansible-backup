@@ -1,51 +1,11 @@
----
-
-- name: "Apply s3 backup lifecycle policy on the s3 bucket {{ backup_mysql_bucket_name }}"
-  s3_lifecycle:
-    rule_id: "{{ _backup_s3_expire_policy.name }}"
-    name: "{{ backup_mysql_bucket_name }}"
-    transition_days: "{{ _backup_s3_expire_policy.glacier_transition }}"
-    expiration_days: "{{ _backup_s3_expire_policy.permanently_delete }}"
-    prefix: "{{ _backup_s3_expire_policy.prefix }}"
-    status: enabled
-    state: present
-  run_once: true
-  delegate_to: 127.0.0.1
-  when: _backup_s3_expire_policy.glacier_transition > 0
-
-- name: "Apply s3 backup lifecycle policy on the s3 bucket {{ backup_mysql_bucket_name }}"
-  s3_lifecycle:
-    rule_id: "{{ _backup_s3_expire_policy.name }}"
-    name: "{{ backup_mysql_bucket_name }}"
-    expiration_days: "{{ _backup_s3_expire_policy.permanently_delete }}"
-    prefix: "{{ _backup_s3_expire_policy.prefix }}"
-    status: enabled
-    state: present
-  run_once: true
-  delegate_to: 127.0.0.1
-  when: _backup_s3_expire_policy.glacier_transition == 0 and _backup_s3_expire_policy.permanently_delete > 0
-
 - name: "create the local backup path {{ backup_mysql_local_path }}"
   file: path={{ backup_mysql_local_path }} state=directory mode=0755 recurse=yes
 
-- name: "Add MySQL db backup script /usr/bin/{{ backup_mysql_script }}.sh"
-  template: src="{{ ansible_template_path_legacy }}mysql/mysql-backup.sh.j2" dest=/usr/bin/{{ backup_mysql_script }}.sh owner=root group=root mode=0755
+- include: configure_backup.yml
+  when: not restore_only
 
-# Add cron comands
-- name: "cron add backup command"
-  cron: >
-    name="{{ item.name | default(default_backup_mysql_cron.name) }}"
-    job="{{ item.job | default(default_backup_mysql_cron.job) }}"
-    minute="{{ item.minute | default(default_backup_mysql_cron.minute) }}"
-    hour="{{ item.hour | default(default_backup_mysql_cron.hour) }}"
-    day="{{ item.day | default(default_backup_mysql_cron.day) }}"
-    month="{{ item.month | default(default_backup_mysql_cron.month) }}"
-    weekday="{{ item.weekday | default(default_backup_mysql_cron.weekday) }}"
-    cron_file="{{ item.file | default(default_backup_mysql_cron.cron_file) }}"
-    user="{{ backup_mysql_cron_user }}"
-    state="{{ item.state | default(default_backup_mysql_cron.state) }}"
-  with_items:
-    - "{{ backup_mysql_cron }}"
-  become: yes 
+- name: "Add MySQL db restore script /usr/bin/{{ restore_mysql_script }}.sh"
+  template: src="{{ ansible_template_path_legacy }}mysql/mysql-restore.sh.j2" dest=/usr/bin/{{ restore_mysql_script }}.sh owner=root group=root mode=0755
 
-
+- name: "Add MySQL db backup list script /usr/bin/{{ list_mysql_script }}.sh"
+  template: src="{{ ansible_template_path_legacy }}mysql/mysql-list-backups.sh.j2" dest=/usr/bin/{{ list_mysql_script }}.sh owner=root group=root mode=0755
