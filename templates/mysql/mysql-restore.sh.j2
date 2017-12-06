@@ -3,14 +3,14 @@
 # Optional arguments:
 #
 # -e <env>: restore from another environment
-# -d <database>: restore to another database name
+# -d <database>: restore to another database name (useless when backup has been done with --all-databases)
 # -f <filter>: restore a specific archive
 
 DIR="{{ backup_mysql_local_path }}/restore"
 BUCKET="{{ backup_mysql_bucket_name }}"
 PROJECT="{{ backup_mysql_project }}"
 ENV="{{ env }}"
-DATABASE="{{ backup_mysql_database }}"
+DATABASE="{{ backup_mysql_database | default("") }}"
 LOG="/var/log/restore_mysql.log"
 FILTER=".*"
 
