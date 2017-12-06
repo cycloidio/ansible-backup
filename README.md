@@ -136,6 +136,7 @@ Role Variables
 
 **Required**
 
+backup_mong_project: probably identical to the project name
 backup_mongo_bucket_name
 
 
