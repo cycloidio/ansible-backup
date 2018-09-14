@@ -36,9 +36,9 @@ log "End get s3 dump"
 
 log "Restore ${ARCHIVE}"
 # Remove the old db
-mysql -h{{ mysql_host }} -u{{ mysql_root_user }} -p{{ mysql_root_password }} -e "DROP DATABASE ${DATABASE}" 2>&1 | tee -a ${LOG}
-mysql -h{{ mysql_host }} -u{{ mysql_root_user }} -p{{ mysql_root_password }} -e "CREATE DATABASE ${DATABASE}" 2>&1 | tee -a ${LOG}
-tar xzOf ${DIR}/${ARCHIVE} | mysql -h{{ mysql_host }} -u{{ mysql_root_user }} -p{{ mysql_root_password }} ${DATABASE} 2>&1 | tee -a ${LOG}
+mysql -h{{ backup_mysql_host }} -u{{ backup_mysql_user }} -p{{ backup_mysql_password }} -e "DROP DATABASE ${DATABASE}" 2>&1 | tee -a ${LOG}
+mysql -h{{ backup_mysql_host }} -u{{ backup_mysql_user }} -p{{ backup_mysql_password }} -e "CREATE DATABASE ${DATABASE}" 2>&1 | tee -a ${LOG}
+tar xzOf ${DIR}/${ARCHIVE} | mysql -h{{ backup_mysql_host }} -u{{ backup_mysql_user }} -p{{ backup_mysql_password }} ${DATABASE} 2>&1 | tee -a ${LOG}
 log "End restore"
 
 log "Clean ${DIR}/"
