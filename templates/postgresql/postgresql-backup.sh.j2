@@ -61,7 +61,7 @@ rm -rf {{ backup_postgresql_local_path }}
 
 # Upload to S3
 do_log "Upload file on s3 s3://{{ backup_postgresql_bucket_name }}/{{ backup_postgresql_s3_path }}/$TAR_FILE"
-/usr/local/bin/aws s3 cp /tmp/$TAR_FILE  s3://{{ backup_postgresql_bucket_name }}/{{ backup_postgresql_s3_path }}/$TAR_FILE
+aws s3 cp /tmp/$TAR_FILE  s3://{{ backup_postgresql_bucket_name }}/{{ backup_postgresql_s3_path }}/$TAR_FILE
 
 UPLOAD_STATUS=$?
 
