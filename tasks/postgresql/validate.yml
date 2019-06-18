@@ -14,21 +14,21 @@
 
 # Use command instead of s3 module was made to test exactly the command that the cron will execute
 - name: Validate the cron user can push into the bucket with s3cmd
-  command: /usr/local/bin/aws s3 cp /tmp/ansible-backup-postgresql.test s3://{{ backup_postgresql_bucket_name }}
+  command: aws s3 cp /tmp/ansible-backup-postgresql.test s3://{{ backup_postgresql_bucket_name }}
   become: yes
   become_user: "{{ backup_postgresql_cron_user }}"
   environment:
     HOME: "{{ user_home.stdout }}"
 
 - name: Validate the file is uploaded
-  command: /usr/local/bin/aws s3 ls s3://{{ backup_postgresql_bucket_name }}/ansible-backup-postgresql.test
+  command: aws s3 ls s3://{{ backup_postgresql_bucket_name }}/ansible-backup-postgresql.test
   become: yes
   become_user: "{{ backup_postgresql_cron_user }}"
   environment:
     HOME: "{{ user_home.stdout }}"
 
 - name: Validate cleanup test file in s3
-  command: /usr/local/bin/aws s3 rm s3://{{ backup_postgresql_bucket_name }}/ansible-backup-postgresql.test
+  command: aws s3 rm s3://{{ backup_postgresql_bucket_name }}/ansible-backup-postgresql.test
   become: yes
   become_user: "{{ backup_postgresql_cron_user }}"
   environment:

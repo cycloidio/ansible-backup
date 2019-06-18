@@ -57,7 +57,7 @@ rm -rf {{ backup_mongo_local_path }}
 
 # Upload to S3
 do_log "Upload file on s3 s3://{{ backup_mongo_bucket_name }}/{{ backup_mongo_s3_path }}/$TAR_FILE"
-/usr/local/bin/aws s3 cp /tmp/$TAR_FILE  s3://{{ backup_mongo_bucket_name }}/{{ backup_mongo_s3_path }}/$TAR_FILE
+aws s3 cp /tmp/$TAR_FILE  s3://{{ backup_mongo_bucket_name }}/{{ backup_mongo_s3_path }}/$TAR_FILE
 
 UPLOAD_STATUS=$?
 
