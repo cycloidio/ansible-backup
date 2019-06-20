@@ -33,10 +33,10 @@
 
 # Configure backups
 - name: "ES repository {{ backup_es_repository_name }} exist ?"
-  uri: >
-    url="http://{{ backup_es_host }}:{{ backup_es_port }}/_snapshot/{{ backup_es_repository_name }}"
-    method=GET
-    status_code=200
+  uri:
+    url: "http://{{ backup_es_host }}:{{ backup_es_port }}/_snapshot/{{ backup_es_repository_name }}"
+    method: GET
+    status_code: 200
   ignore_errors: True
   register: backup_es_repository_status
 
@@ -46,18 +46,28 @@
 
 # Add cron comands
 - name: "cron add snapshot and retention commands"
-  cron: >
-    name="{{ item.name | default(default_backup_es_cron.name) }}"
-    job="{{ item.job | default(default_backup_es_cron.job) }}"
-    minute="{{ item.minute | default(default_backup_es_cron.minute) }}"
-    hour="{{ item.hour | default(default_backup_es_cron.hour) }}"
-    day="{{ item.day | default(default_backup_es_cron.day) }}"
-    month="{{ item.month | default(default_backup_es_cron.month) }}"
-    weekday="{{ item.weekday | default(default_backup_es_cron.weekday) }}"
-    cron_file="{{ item.file | default(default_backup_es_cron.cron_file) }}"
-    user="{{ item.user | default(default_backup_es_cron.user) }}"
-    state="{{ item.state | default(default_backup_es_cron.state) }}"
-  with_items:
-    - "{{ backup_es_cron }}"
+  block:
+    - cron:
+        name: "{{ item.name | default(default_backup_es_cron.name) }}"
+        job: "{{ item.job | default(default_backup_es_cron.job) }}"
+        minute: "{{ item.minute | default(default_backup_es_cron.minute) }}"
+        hour: "{{ item.hour | default(default_backup_es_cron.hour) }}"
+        day: "{{ item.day | default(default_backup_es_cron.day) }}"
+        month: "{{ item.month | default(default_backup_es_cron.month) }}"
+        weekday: "{{ item.weekday | default(default_backup_es_cron.weekday) }}"
+        cron_file: "{{ item.file | default(default_backup_es_cron.cron_file) }}"
+        user: "{{ item.user | default(default_backup_es_cron.user) }}"
+        state: "{{ item.state | default(default_backup_es_cron.state) }}"
+      with_items:
+        - "{{ backup_es_cron }}"
+    - cron:
+        env: yes
+        name: PATH
+        value: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        cron_file: "{{ item.file | default(default_backup_es_cron.cron_file) }}"
+        user: "{{ item.user | default(default_backup_es_cron.user) }}"
+        state: "{{ item.state | default(default_backup_es_cron.state) }}"
+      with_items:
+        - "{{ backup_es_cron }}"
   become: yes 
 

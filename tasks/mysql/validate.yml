@@ -3,41 +3,39 @@
 # Used by aws cli with sudo commands
 # If you are not able to change sudo_flags, the HOME variable when using become_user
 # will be the HOME from the ssh user.
-- name: "Get HOME directory for user {{ backup_postgresql_cron_user }}"
-  shell: 'getent passwd {{ backup_postgresql_cron_user }} | cut -d: -f6'
+- name: "Get HOME directory for user {{ backup_mysql_cron_user }}"
+  shell: 'getent passwd {{ backup_mysql_cron_user }} | cut -d: -f6'
   register: user_home
 
 - name: Validate create tmpfile to test s3 push.
-  file: path=/tmp/ansible-backup-postgresql.test state=touch
-- debug: var=backup_postgresql_cron_user
+  file: path=/tmp/ansible-backup-mysql.test state=touch
+- debug: var=backup_mysql_cron_user
 
 # Use command instead of s3 module was made to test exactly the command that the cron will execute
 - name: Validate the cron user can push into the bucket with s3cmd
-  command: aws s3 cp /tmp/ansible-backup-postgresql.test s3://{{ backup_postgresql_bucket_name }}
+  command: aws s3 cp /tmp/ansible-backup-mysql.test s3://{{ backup_mysql_bucket_name }}
   become: yes
-  become_user: "{{ backup_postgresql_cron_user }}"
+  become_user: "{{ backup_mysql_cron_user }}"
   environment:
     HOME: "{{ user_home.stdout }}"
 
 - name: Validate the file is uploaded
-  command: aws s3 ls s3://{{ backup_postgresql_bucket_name }}/ansible-backup-postgresql.test
+  command: aws s3 ls s3://{{ backup_mysql_bucket_name }}/ansible-backup-mysql.test
   become: yes
-  become_user: "{{ backup_postgresql_cron_user }}"
+  become_user: "{{ backup_mysql_cron_user }}"
   environment:
     HOME: "{{ user_home.stdout }}"
 
 - name: Validate cleanup test file in s3
-  command: aws s3 rm s3://{{ backup_postgresql_bucket_name }}/ansible-backup-postgresql.test
+  command: aws s3 rm s3://{{ backup_mysql_bucket_name }}/ansible-backup-mysql.test
   become: yes
-  become_user: "{{ backup_postgresql_cron_user }}"
+  become_user: "{{ backup_mysql_cron_user }}"
   environment:
     HOME: "{{ user_home.stdout }}"
   run_once: true
 
-- name: Validate postgres user
-  command: psql -h {{ backup_postgresql_host }} -U {{ backup_postgresql_user }} postgres -c '\l'
+- name: Validate mysql user
+  command: mysql -h {{ backup_mysql_host }} -u {{ backup_mysql_user }} -e 'show databases;'
   environment:
-    PGPASSWORD: "{{ backup_postgresql_password }}"
+    MYSQL_PWD: "{{ backup_mysql_password }}"
   run_once: true
-
-

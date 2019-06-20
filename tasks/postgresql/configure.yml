@@ -33,17 +33,27 @@
 
 # Add cron comands
 - name: "cron add backup command"
-  cron: >
-    name="{{ item.name | default(default_backup_postgresql_cron.name) }}"
-    job="{{ item.job | default(default_backup_postgresql_cron.job) }}"
-    minute="{{ item.minute | default(default_backup_postgresql_cron.minute) }}"
-    hour="{{ item.hour | default(default_backup_postgresql_cron.hour) }}"
-    day="{{ item.day | default(default_backup_postgresql_cron.day) }}"
-    month="{{ item.month | default(default_backup_postgresql_cron.month) }}"
-    weekday="{{ item.weekday | default(default_backup_postgresql_cron.weekday) }}"
-    cron_file="{{ item.file | default(default_backup_postgresql_cron.cron_file) }}"
-    user="{{ backup_postgresql_cron_user }}"
-    state="{{ item.state | default(default_backup_postgresql_cron.state) }}"
-  with_items:
-    - "{{ backup_postgresql_cron }}"
+  block:
+    - cron:
+        name: "{{ item.name | default(default_backup_postgresql_cron.name) }}"
+        job: "{{ item.job | default(default_backup_postgresql_cron.job) }}"
+        minute: "{{ item.minute | default(default_backup_postgresql_cron.minute) }}"
+        hour: "{{ item.hour | default(default_backup_postgresql_cron.hour) }}"
+        day: "{{ item.day | default(default_backup_postgresql_cron.day) }}"
+        month: "{{ item.month | default(default_backup_postgresql_cron.month) }}"
+        weekday: "{{ item.weekday | default(default_backup_postgresql_cron.weekday) }}"
+        cron_file: "{{ item.file | default(default_backup_postgresql_cron.cron_file) }}"
+        user: "{{ backup_postgresql_cron_user }}"
+        state: "{{ item.state | default(default_backup_postgresql_cron.state) }}"
+      with_items:
+        - "{{ backup_postgresql_cron }}"
+    - cron:
+        env: yes
+        name: PATH
+        value: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        cron_file: "{{ item.file | default(default_backup_postgresql_cron.cron_file) }}"
+        user: "{{ backup_postgresql_cron_user }}"
+        state: "{{ item.state | default(default_backup_postgresql_cron.state) }}"
+      with_items:
+        - "{{ backup_postgresql_cron }}"
   become: yes 
