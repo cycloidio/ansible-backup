@@ -30,17 +30,27 @@
 
 # Add cron comands
 - name: "cron add backup command"
-  cron: >
-    name="{{ item.name | default(default_backup_mysql_cron.name) }}"
-    job="{{ item.job | default(default_backup_mysql_cron.job) }}"
-    minute="{{ item.minute | default(default_backup_mysql_cron.minute) }}"
-    hour="{{ item.hour | default(default_backup_mysql_cron.hour) }}"
-    day="{{ item.day | default(default_backup_mysql_cron.day) }}"
-    month="{{ item.month | default(default_backup_mysql_cron.month) }}"
-    weekday="{{ item.weekday | default(default_backup_mysql_cron.weekday) }}"
-    cron_file="{{ item.file | default(default_backup_mysql_cron.cron_file) }}"
-    user="{{ backup_mysql_cron_user }}"
-    state="{{ item.state | default(default_backup_mysql_cron.state) }}"
-  with_items:
-    - "{{ backup_mysql_cron }}"
+  block:
+    - cron:
+        name: "{{ item.name | default(default_backup_mysql_cron.name) }}"
+        job: "{{ item.job | default(default_backup_mysql_cron.job) }}"
+        minute: "{{ item.minute | default(default_backup_mysql_cron.minute) }}"
+        hour: "{{ item.hour | default(default_backup_mysql_cron.hour) }}"
+        day: "{{ item.day | default(default_backup_mysql_cron.day) }}"
+        month: "{{ item.month | default(default_backup_mysql_cron.month) }}"
+        weekday: "{{ item.weekday | default(default_backup_mysql_cron.weekday) }}"
+        cron_file: "{{ item.file | default(default_backup_mysql_cron.cron_file) }}"
+        user: "{{ backup_mysql_cron_user }}"
+        state: "{{ item.state | default(default_backup_mysql_cron.state) }}"
+      with_items:
+        - "{{ backup_mysql_cron }}"
+    - cron:
+        env: yes
+        name: PATH
+        value: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        cron_file: "{{ item.file | default(default_backup_mysql_cron.cron_file) }}"
+        user: "{{ backup_mysql_cron_user }}"
+        state: "{{ item.state | default(default_backup_mysql_cron.state) }}"
+      with_items:
+        - "{{ backup_mysql_cron }}"
   become: yes 
