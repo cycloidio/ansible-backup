@@ -159,6 +159,7 @@ backup_postgresql_cmd: PGPASSWORD={{ backup_postgresql_password }} pg_dump -b -h
 
 ### Optional
 
+backup_define_mysql_cron: true
 backup_mysql_cron: {}
 #  name: snapshot
 #  job: "/usr/bin/cronlock /usr/bin/mysql-backup.sh 2>&1 >> /var/log/mysql-backup.log"

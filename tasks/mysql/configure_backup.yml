@@ -30,6 +30,7 @@
 
 # Add cron comands
 - name: "cron add backup command"
+  when: backup_define_mysql_cron
   block:
     - cron:
         name: "{{ item.name | default(default_backup_mysql_cron.name) }}"
