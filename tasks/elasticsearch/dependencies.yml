@@ -1,15 +1,14 @@
 ---
-
 - name: Install required package for es backup | Ubuntu / Debian
   apt:
-    name: '{{ item }}'
+    name: "{{ item }}"
     cache_valid_time: 3600
-    update_cache: yes 
+    update_cache: yes
     state: latest
   with_items:
-    - python-dev
+    - python3-dev
     - build-essential
-    - python-pip
+    - python3-pip
     - cron
   when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
 
@@ -21,4 +20,4 @@
   delegate_to: 127.0.0.1
 
 - pip: name=awscli state=latest
-  when: _check_aws_cli|failed
+  when: _check_aws_cli is failed

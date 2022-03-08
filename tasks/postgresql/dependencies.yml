@@ -1,21 +1,20 @@
 ---
-
 - name: "Install required package for postgresql backup | Ubuntu / Debian"
   apt:
-    name: '{{ item }}'
+    name: "{{ item }}"
     cache_valid_time: 3600
-    update_cache: yes 
+    update_cache: yes
     state: latest
   with_items:
     - cron
-    - python-dev
+    - python3-dev
     - build-essential
-    - python-pip
+    - python3-pip
     - postgresql-client
   when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
 
 - pip: name=awscli state=latest
-  when: _check_aws_cli|failed
+  when: _check_aws_cli is failed
 
 # Ensure dateutil is installed for s3_lifecycle
 - pip: name=python-dateutil state=present
