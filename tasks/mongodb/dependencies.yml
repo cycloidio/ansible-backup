@@ -14,7 +14,7 @@
   when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
 
 - pip: name=awscli state=latest
-  when: _check_aws_cli|failed
+  when: _check_aws_cli is failed
 
 # Ensure dateutil is installed for s3_lifecycle
 - pip: name=python-dateutil state=present

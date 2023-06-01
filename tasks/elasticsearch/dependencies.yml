@@ -21,4 +21,4 @@
   delegate_to: 127.0.0.1
 
 - pip: name=awscli state=latest
-  when: _check_aws_cli|failed
+  when: _check_aws_cli is failed

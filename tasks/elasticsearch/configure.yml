@@ -42,7 +42,7 @@
 
 - name: "Create ES repository {{ backup_es_repository_name }}"
   command: /usr/bin/elasticsearch-create-backup-repository.sh
-  when: backup_es_repository_status|failed
+  when: backup_es_repository_status is failed
 
 # Add cron comands
 - name: "cron add snapshot and retention commands"
