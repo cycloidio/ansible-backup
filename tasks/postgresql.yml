@@ -1,8 +1,8 @@
 ---
 
- - include: postgresql/check.yml
- - include: postgresql/dependencies.yml
- - include: postgresql/configure.yml
+ - include_tasks: postgresql/check.yml
+ - include_tasks: postgresql/dependencies.yml
+ - include_tasks: postgresql/configure.yml
 
- - include: postgresql/validate.yml
+ - include_tasks: postgresql/validate.yml
    when: validate_task is defined and validate_task

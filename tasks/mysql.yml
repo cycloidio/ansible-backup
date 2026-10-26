@@ -1,8 +1,8 @@
 ---
 
- - include: mysql/check.yml
- - include: mysql/dependencies.yml
- - include: mysql/configure.yml
+ - include_tasks: mysql/check.yml
+ - include_tasks: mysql/dependencies.yml
+ - include_tasks: mysql/configure.yml
 
- - include: mysql/validate.yml
+ - include_tasks: mysql/validate.yml
    when: validate_task is defined and validate_task

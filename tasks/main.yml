@@ -1,7 +1,7 @@
 ---
 
 # Check args
- - include: check.yml
+ - include_tasks: check.yml
 
 # Legacy parameter for copy module with template. In ansible 1.9.4 with multiple include in sub directory we can't
 # use simply template. Ansible still looking in task/template/... directory
@@ -15,4 +15,4 @@
       ansible_template_path_legacy: ''
    when: ansible_version.major >= 2
 
- - include: "{{ backup_type }}.yml"
+ - include_tasks: "{{ backup_type }}.yml"
