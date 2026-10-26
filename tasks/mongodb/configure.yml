@@ -3,7 +3,7 @@
 - name: "create the local backup path {{ backup_mongo_local_path }}"
   file: path={{ backup_mongo_local_path }} state=directory mode=0755 recurse=yes
 
-- include: configure_backup.yml
+- include_tasks: configure_backup.yml
   when: not restore_only
 
 - name: "Add mongodb restore script /usr/bin/mongo-restore.sh"

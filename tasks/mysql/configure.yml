@@ -1,7 +1,7 @@
 - name: "create the local backup path {{ backup_mysql_local_path }}"
   file: path={{ backup_mysql_local_path }} state=directory mode=0755 recurse=yes
 
-- include: configure_backup.yml
+- include_tasks: configure_backup.yml
   when: not restore_only
 
 - name: "Add MySQL db restore script /usr/bin/{{ restore_mysql_script }}.sh"

@@ -1,8 +1,8 @@
 ---
 
- - include: elasticsearch/check.yml
- - include: elasticsearch/dependencies.yml
- - include: elasticsearch/configure.yml
+ - include_tasks: elasticsearch/check.yml
+ - include_tasks: elasticsearch/dependencies.yml
+ - include_tasks: elasticsearch/configure.yml
 
- - include: elasticsearch/validate.yml
+ - include_tasks: elasticsearch/validate.yml
    when: validate_task is defined and validate_task

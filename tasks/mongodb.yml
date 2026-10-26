@@ -1,8 +1,8 @@
 ---
 
- - include: mongodb/check.yml
- - include: mongodb/dependencies.yml
- - include: mongodb/configure.yml
+ - include_tasks: mongodb/check.yml
+ - include_tasks: mongodb/dependencies.yml
+ - include_tasks: mongodb/configure.yml
 
- - include: mongodb/validate.yml
+ - include_tasks: mongodb/validate.yml
    when: validate_task is defined and validate_task
