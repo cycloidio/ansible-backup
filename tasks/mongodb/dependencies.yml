@@ -17,6 +17,9 @@
   when: _check_aws_cli is failed and ansible_pkg_mgr != "apt"
 
 # Ensure dateutil is installed for s3_lifecycle
-- pip: name=python-dateutil state=present
+- pip:
+    name: python-dateutil
+    state: present
+    extra_args: "--break-system-packages"
   run_once: true
   delegate_to: 127.0.0.1
