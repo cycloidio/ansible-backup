@@ -9,6 +9,7 @@
     - python3-dev
     - build-essential
     - python3-pip
+    - awscli
     - cron
   when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
 
